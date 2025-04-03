@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  mysql_db:
+    image: mysql:8.0
+    container_name: parkify_db_container
+    restart: always
+    environment:
+      MYSQL_DATABASE: db_parkify
+      MYSQL_USER: parkify
+      MYSQL_PASSWORD: 1234
+      MYSQL_ROOT_PASSWORD: root_password_123
+
+    ports:
+      - "3306:3306"
+
+    volumes:
+      - parkify_mysql_data:/var/lib/mysql
+
+volumes:
+  parkify_mysql_data:
