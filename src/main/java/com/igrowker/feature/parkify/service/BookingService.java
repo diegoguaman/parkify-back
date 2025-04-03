@@ -1,4 +1,4 @@
-package com.igrowker.feature.parkify.services;
+package com.igrowker.feature.parkify.service;
 
 import org.springframework.stereotype.Service;
 

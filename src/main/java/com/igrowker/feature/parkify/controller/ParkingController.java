@@ -1,4 +1,4 @@
-package com.igrowker.feature.parkify.controllers;
+package com.igrowker.feature.parkify.controller;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @CrossOrigin(origins = "")
 @RestController
-@RequestMapping("/api/bookings")
-public class BookingController {
-
+@RequestMapping("")
+public class ParkingController {
 }

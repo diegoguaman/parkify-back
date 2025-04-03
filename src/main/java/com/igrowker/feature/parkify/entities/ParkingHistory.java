@@ -1,4 +1,4 @@
-package com.igrowker.feature.parkify.models;
+package com.igrowker.feature.parkify.entities;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

@@ -1,4 +1,4 @@
-package com.igrowker.feature.parkify.models;
+package com.igrowker.feature.parkify.entities;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -9,8 +9,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name= "user")
-public class User {
+@Table(name="booking")
+public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
