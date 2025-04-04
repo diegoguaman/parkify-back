@@ -13,7 +13,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name="parking_history")
+//@Table(name="parking_history")
 public class ParkingHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
