@@ -20,15 +20,15 @@ public class ParkingServiceImpl implements ParkingService {
 
     @Override
     public ParkingResponse createParking(ParkingRequest request) {
-        Parking parking = new Parking();
-        parking.setName(request.getName());
-        parking.setAddress(request.getAddress());
-        parking.setLatitude(request.getLatitude());
-        parking.setLongitude(request.getLongitude());
-        parking.setRateHour(request.getRateHour());
-        parking.setAvailable(request.getAvailable());
-        parking.setWhatsapp(request.getWhatsapp());
-        parking.setOwnerId(request.getOwnerId());
+        Parking parking = Parking.builder()
+                .name(request.getName())
+                .address(request.getAddress())
+                .latitude(request.getLatitude())
+                .longitude(request.getLongitude())
+                .rateHour(request.getRateHour())
+                .whatsapp(request.getWhatsapp())
+                .ownerId(request.getOwnerId())
+                .build();
 
         Parking saved = parkingRepository.save(parking);
 
@@ -39,7 +39,6 @@ public class ParkingServiceImpl implements ParkingService {
                 .latitude(saved.getLatitude())
                 .longitude(saved.getLongitude())
                 .rateHour(saved.getRateHour())
-                .available(saved.getAvailable())
                 .whatsapp(saved.getWhatsapp())
                 .ownerId(saved.getOwnerId())
                 .build();

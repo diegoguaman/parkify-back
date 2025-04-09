@@ -36,16 +36,16 @@ class ParkingServiceTest {
                 .ownerId(100L)
                 .build();
 
-        Parking savedParking = new Parking();
-        savedParking.setId(1L);
-        savedParking.setName(request.getName());
-        savedParking.setAddress(request.getAddress());
-        savedParking.setLatitude(request.getLatitude());
-        savedParking.setLongitude(request.getLongitude());
-        savedParking.setRateHour(request.getRateHour());
-        savedParking.setAvailable(request.getAvailable());
-        savedParking.setWhatsapp(request.getWhatsapp());
-        savedParking.setOwnerId(request.getOwnerId());
+        Parking savedParking = Parking.builder()
+                .id(1L)
+                .name(request.getName())
+                .address(request.getAddress())
+                .latitude(request.getLatitude())
+                .longitude(request.getLongitude())
+                .rateHour(request.getRateHour())
+                .whatsapp(request.getWhatsapp())
+                .ownerId(request.getOwnerId())
+                .build();
 
         Mockito.when(parkingRepository.save(Mockito.any(Parking.class)))
                 .thenReturn(savedParking);

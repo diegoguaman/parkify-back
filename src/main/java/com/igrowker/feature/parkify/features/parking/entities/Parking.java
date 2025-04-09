@@ -1,13 +1,20 @@
 package com.igrowker.feature.parkify.features.parking.entities;
 
-import jakarta.persistence.*;
-import lombok.Getter;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name="parkings")
 public class Parking {
@@ -20,11 +27,14 @@ public class Parking {
     private Double latitude;
     private Double longitude;
     private Double rateHour;
-    private int available;
     private String whatsapp;
 
     @Column(name = "owner_id")
     private Long ownerId;
     @Column(name = "available_spots")
     private Integer availableSpots;
+    @Column(nullable = false)
+    private Integer capacity;
+    private String workingHours;
+
 }
