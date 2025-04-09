@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class RegisterRequest {
+public class RegisterRequest extends com.igrowker.feature.parkify.features.user.dto.RegisterRequest {
     @NotBlank(message = "Username cannot be blank")
     private String username;
 
