@@ -16,9 +16,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.utility.DockerImageName;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
@@ -36,10 +33,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 class AuthControllerWebLayerTest {
     private final String testToken = "webLayerTestJwtToken789";
-    @Container
-    static MySQLContainer<?> mysqlContainer = new MySQLContainer<>(
-            DockerImageName.parse("mysql:8.0")
-    );
     @Autowired
     private MockMvc mockMvc;
     @Autowired
