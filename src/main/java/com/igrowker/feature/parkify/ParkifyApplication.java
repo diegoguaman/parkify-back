@@ -13,10 +13,10 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 		JwtProperties.class,
 		FooterProperties.class,  HomeProperties.class, InitialConfigProperties.class
 })
-public class MiniProjectApplication {
+public class ParkifyApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(MiniProjectApplication.class, args);
+		SpringApplication.run(ParkifyApplication.class, args);
 	}
 
 }
