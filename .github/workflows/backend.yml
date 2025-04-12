@@ -30,8 +30,8 @@ jobs:
 
       - name: Construir imagen del backend
         run: |
-          docker build -t southamerica-east1-docker.pkg.dev/parkify-igrowker-v1/backend/parkify-back:latest .
+          docker build -t southamerica-east1-docker.pkg.dev/training-batch-05/parkify-backend/spring-boot:latest .
 
       - name: Subir imagen al Artifact Registry
         run: |
-          docker push southamerica-east1-docker.pkg.dev/parkify-igrowker-v1/backend/parkify-back:latest
+          docker push southamerica-east1-docker.pkg.dev/training-batch-05/parkify-backend/spring-boot:latest
