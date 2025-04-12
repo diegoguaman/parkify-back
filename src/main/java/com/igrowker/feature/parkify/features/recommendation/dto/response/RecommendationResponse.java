@@ -8,11 +8,10 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class RecommendationResponse {
     private Long parkingId;
     private String name;
     private String address;
+
 }

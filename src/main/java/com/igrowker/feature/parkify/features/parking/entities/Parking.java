@@ -29,7 +29,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "parkings")
+@Table(name = "parking")
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Parking {
     @Id
