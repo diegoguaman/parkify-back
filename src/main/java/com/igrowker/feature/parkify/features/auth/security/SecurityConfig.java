@@ -44,54 +44,41 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                antMatcher(HttpMethod.POST, AUTH_PATH + "/register"),
-                                antMatcher(HttpMethod.POST, AUTH_PATH + "/login")
-                        ).permitAll()
-                        .requestMatchers(
-                                antMatcher(HttpMethod.GET, CONTENT_PATH + "/home"),
-                                antMatcher(HttpMethod.GET, CONTENT_PATH + "/footer")
-                        ).permitAll()
-                        .requestMatchers(
-                                antMatcher(HttpMethod.GET, PARKINGS_PATH),
-                                antMatcher(HttpMethod.GET, PARKINGS_PATH + "/{parkingId}")
-                        ).permitAll()
-                        .requestMatchers(
-                                antMatcher(HttpMethod.GET, PARKINGS_PATH + "/{parkingId}/availability")
-                        ).permitAll()
-                        .requestMatchers(
-                                antMatcher(HttpMethod.GET, AUTH_PATH + "/me")
-                        ).authenticated()
-                        .requestMatchers(
-                                antMatcher(HttpMethod.PUT, USERS_PATH + "/me/location")
-                        ).authenticated()
-                        .requestMatchers(
-                                antMatcher(HttpMethod.GET, CONFIG_PATH + "/initial")
-                        ).permitAll()
-                        .requestMatchers(
-                                antMatcher(HttpMethod.GET, RECOMMENDATIONS_PATH + "/zones"),
-                                antMatcher(HttpMethod.GET, RECOMMENDATIONS_PATH + "/parkings")
-                        ).authenticated()
-                        .requestMatchers(
-                                antMatcher(HttpMethod.PATCH, BOOKINGS_PATH + "/{bookingRequestId}")
-                        ).authenticated()
-                        .requestMatchers(
-                                antMatcher(HttpMethod.GET, OPERATIONS_PATH + "/{operationId}/status")
-                        ).authenticated()
+                                antMatcher(HttpMethod.POST, PARKINGS_PATH + "/my"),
+                                antMatcher(HttpMethod.GET, PARKINGS_PATH + "/my"), // <-- Наше правило
+                                antMatcher(HttpMethod.PATCH, PARKINGS_PATH + "/my/availability"),
+                                antMatcher(HttpMethod.PUT, PARKINGS_PATH + "/{parkingId}/features/{featureSlug}"),
+                                antMatcher(HttpMethod.DELETE, PARKINGS_PATH + "/{parkingId}/features/{featureSlug}"),
+                                antMatcher(HttpMethod.GET, PARKINGS_PATH + "/owner/parking") // Если остается
+                        ).hasRole(OWNER_ROLE)
                         .requestMatchers(
                                 antMatcher(HttpMethod.POST, BOOKINGS_PATH)
                         ).hasRole(DRIVER_ROLE)
                         .requestMatchers(
-                                antMatcher(HttpMethod.POST, PARKINGS_PATH + "/my")
-                        ).hasRole(OWNER_ROLE)
+                                antMatcher(HttpMethod.GET, AUTH_PATH + "/me"),
+                                antMatcher(HttpMethod.PUT, USERS_PATH + "/me/location"),
+                                antMatcher(HttpMethod.GET, RECOMMENDATIONS_PATH + "/zones"),
+                                antMatcher(HttpMethod.GET, RECOMMENDATIONS_PATH + "/parkings"),
+                                antMatcher(HttpMethod.PATCH, BOOKINGS_PATH + "/{bookingRequestId}"),
+                                antMatcher(HttpMethod.GET, OPERATIONS_PATH + "/{operationId}/status")
+                        ).authenticated()
                         .requestMatchers(
-                                antMatcher(HttpMethod.GET, PARKINGS_PATH + "/my")
-                        ).hasRole(OWNER_ROLE)
-                        .requestMatchers(
-                                antMatcher(HttpMethod.PATCH, PARKINGS_PATH + "/my/availability")
-                        ).hasRole(OWNER_ROLE)
+                                antMatcher(HttpMethod.POST, AUTH_PATH + "/register"),
+                                antMatcher(HttpMethod.POST, AUTH_PATH + "/login"),
+                                antMatcher(HttpMethod.GET, CONTENT_PATH + "/home"),
+                                antMatcher(HttpMethod.GET, CONTENT_PATH + "/footer"),
+                                antMatcher(HttpMethod.GET, PARKINGS_PATH),
+                                antMatcher(HttpMethod.GET, PARKINGS_PATH + "/{parkingId}"),
+                                antMatcher(HttpMethod.GET, PARKINGS_PATH + "/{parkingId}/availability"),
+                                antMatcher(HttpMethod.GET, CONFIG_PATH + "/initial"),
+                                antMatcher(HttpMethod.GET, "/api/v1/features"),
+                                antMatcher(HttpMethod.GET, "/api/v1/features/**")
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .userDetailsService(userDetailsService)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
