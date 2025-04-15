@@ -251,8 +251,17 @@ public class ParkingServiceImpl implements ParkingService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ParkingDetailsResponse getMyParkingDetails(String ownerEmail) {
-        return null;
+        final AuthUser owner = authUserRepository.findByEmail(ownerEmail)
+                .orElseThrow(() -> new OwnerNotFoundException(
+                        "Authenticated owner not found with email: " + ownerEmail
+                ));
+        final Parking parking = parkingRepository.findByOwnerId(owner.getId())
+                .orElseThrow(() -> new ParkingNotFoundException(
+                        "Parking not found for owner with email: " + ownerEmail
+                ));
+        return mapParkingToDetailsResponse(parking, owner);
     }
 
     @Override
@@ -323,6 +332,29 @@ public class ParkingServiceImpl implements ParkingService {
                 .ownerEmail(owner.getEmail())
                 .ownerPhone(owner.getContactPhone())
                 .parking(parkingResponse)
+                .build();
+    }
+
+
+    private ParkingDetailsResponse mapParkingToDetailsResponse(Parking parking, AuthUser owner) {
+        final List<String> featureSlugs = Optional.ofNullable(parking.getFeatures())
+                .orElse(Collections.emptySet())
+                .stream()
+                .map(Feature::getSlug)
+                .toList();
+
+        return ParkingDetailsResponse.builder()
+                .id(parking.getId().toString())
+                .name(parking.getName())
+                .address(parking.getAddress())
+                .location(new LocationDto(parking.getLatitude(), parking.getLongitude()))
+                .description(parking.getDescription())
+                .capacity(parking.getCapacity())
+                .currentAvailability(ofNullable(parking.getAvailableSpots()).orElse(0))
+                .hourlyRate(parking.getHourlyRate())
+                .workingHours(parking.getWorkingHours())
+                .featureSlugs(featureSlugs)
+                .ownerId(owner.getId().toString())
                 .build();
     }
 
