@@ -6,6 +6,7 @@ import com.igrowker.feature.parkify.exception.ParkingNotFoundException;
 import com.igrowker.feature.parkify.features.auth.entities.AuthUser;
 import com.igrowker.feature.parkify.features.auth.repository.AuthUserRepository;
 import com.igrowker.feature.parkify.features.parking.dto.request.CreateMyParkingRequest;
+import com.igrowker.feature.parkify.features.parking.dto.response.OwnerParkingDetailsResponse;
 import com.igrowker.feature.parkify.features.parking.dto.response.ParkingAvailabilityResponse;
 import com.igrowker.feature.parkify.features.parking.dto.response.ParkingDetailsResponse;
 import com.igrowker.feature.parkify.features.parking.dto.response.ParkingResponse;
@@ -13,6 +14,10 @@ import com.igrowker.feature.parkify.features.parking.entities.Parking;
 import com.igrowker.feature.parkify.features.parking.repository.ParkingRepository;
 import com.igrowker.feature.parkify.features.parking_feature.entity.Feature;
 import com.igrowker.feature.parkify.features.parking_feature.repository.FeatureRepository;
+import com.igrowker.feature.parkify.features.recommendation.dto.response.RecommendationResponse;
+import com.igrowker.feature.parkify.features.recommendation.entities.OccupancyHistory;
+import com.igrowker.feature.parkify.features.recommendation.repository.OccupancyHistoryRepository;
+import com.igrowker.feature.parkify.features.recommendation.service.RecommendationServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -25,10 +30,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataAccessException;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -79,11 +82,15 @@ class ParkingServiceImplTest {
     @Mock
     private ParkingRepository parkingRepository;
     @Mock
+    private OccupancyHistoryRepository occupancyHistoryRepository;
+    @Mock
     private AuthUserRepository authUserRepository;
     @Mock
     private FeatureRepository featureRepository;
     @InjectMocks
     private ParkingServiceImpl parkingService;
+    @InjectMocks
+    private RecommendationServiceImpl recommendationService;
     @Captor
     private ArgumentCaptor<Parking> parkingCaptor;
 
@@ -111,6 +118,143 @@ class ParkingServiceImplTest {
                 .features(Set.of(FEATURE_COVERED, FEATURE_SECURITY, FEATURE_EV))
                 .ownerId(VALID_OWNER_ID_LONG)
                 .build();
+    }
+
+    @Test
+    void getOwnerWithParking_ShouldReturnOwnerAndParkingDetails() {
+        String email = "owner@example.com";
+        AuthUser owner = new AuthUser();
+        owner.setId(1L);
+        owner.setUsername("Owner Name");
+        owner.setEmail(email);
+        owner.setContactPhone("+56999887766");
+
+        Parking parking = new Parking();
+        parking.setId(1L);
+        parking.setName("Test Parking");
+        parking.setAddress("123 Test Address");
+        parking.setLatitude(40.7128);
+        parking.setLongitude(74.0060);
+        parking.setDescription("Test Parking Description");
+        parking.setAvailableSpots(5);
+        parking.setHourlyRate(10.0);
+        parking.setWorkingHours("08:00 AM - 08:00 PM");
+        parking.setOwnerId(1L);
+
+        when(authUserRepository.findByEmail(email)).thenReturn(Optional.of(owner));
+        when(parkingRepository.findByOwnerId(owner.getId())).thenReturn(Optional.of(parking));
+
+        OwnerParkingDetailsResponse response = parkingService.getOwnerWithParking(email);
+
+        assertNotNull(response);
+        assertEquals(owner.getUsername(), response.getOwnerName());
+        assertEquals(owner.getEmail(), response.getOwnerEmail());
+        assertEquals(owner.getContactPhone(), response.getOwnerPhone());
+
+        ParkingResponse parkingResponse = response.getParking();
+        assertNotNull(parkingResponse);
+        assertEquals(parking.getId(), parkingResponse.getId());
+        assertEquals(parking.getName(), parkingResponse.getName());
+        assertEquals(parking.getAddress(), parkingResponse.getAddress());
+        assertEquals(parking.getLatitude(), parkingResponse.getLatitude());
+        assertEquals(parking.getLongitude(), parkingResponse.getLongitude());
+        assertEquals(parking.getDescription(), parkingResponse.getDescription());
+        assertEquals(parking.getAvailableSpots(), parkingResponse.getCurrentAvailability());
+        assertEquals(parking.getHourlyRate(), parkingResponse.getHourlyRate());
+        assertEquals(parking.getWorkingHours(), parkingResponse.getWorkingHours());
+        assertEquals(parking.getOwnerId(), parkingResponse.getOwnerId());
+
+        verify(authUserRepository, times(1)).findByEmail(email);
+        verify(parkingRepository, times(1)).findByOwnerId(owner.getId());
+    }
+
+    @Test
+    void getOwnerWithParking_ShouldThrowException_WhenOwnerNotFound() {
+        String email = "nonexistent@example.com";
+
+        when(authUserRepository.findByEmail(email)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> parkingService.getOwnerWithParking(email));
+
+        verify(authUserRepository, times(1)).findByEmail(email);
+        verify(parkingRepository, times(0)).findByOwnerId(any());
+    }
+
+    @Test
+    void getOwnerWithParking_ShouldThrowException_WhenParkingNotFound() {
+        String email = "owner@example.com";
+        AuthUser owner = new AuthUser();
+        owner.setId(1L);
+        owner.setUsername("Owner Name");
+        owner.setEmail(email);
+        owner.setContactPhone("+56999887766");
+
+        when(authUserRepository.findByEmail(email)).thenReturn(Optional.of(owner));
+        when(parkingRepository.findByOwnerId(owner.getId())).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () -> parkingService.getOwnerWithParking(email));
+
+        verify(authUserRepository, times(1)).findByEmail(email);
+        verify(parkingRepository, times(1)).findByOwnerId(owner.getId());
+    }
+
+    @Test
+    void generateRecommendations_shouldReturnHighAvailabilityParkings() {
+        Parking parking1 = Parking.builder()
+                .id(1L)
+                .name("Parking A")
+                .address("Address A")
+                .latitude(40.0)
+                .longitude(-3.0)
+                .description("Description A")
+                .capacity(100)
+                .availableSpots(80)
+                .hourlyRate(5.0)
+                .workingHours("8AM-10PM")
+                .ownerId(1L)
+                .features(new HashSet<>())
+                .build();
+
+        Parking parking2 = Parking.builder()
+                .id(2L)
+                .name("Parking B")
+                .address("Address B")
+                .latitude(41.0)
+                .longitude(-3.5)
+                .description("Description B")
+                .capacity(50)
+                .availableSpots(20)
+                .hourlyRate(4.0)
+                .workingHours("24/7")
+                .ownerId(2L)
+                .features(new HashSet<>())
+                .build();
+
+        List<Parking> allParkings = List.of(parking1, parking2);
+
+        OccupancyHistory occupancyHistory1 = OccupancyHistory.builder()
+                .id(1L)
+                .parkingId(1L)
+                .timestamp(LocalDateTime.now().minusDays(1))
+                .occupancyRate(0.2)
+                .build();
+
+        OccupancyHistory occupancyHistory2 = OccupancyHistory.builder()
+                .id(2L)
+                .parkingId(2L)
+                .timestamp(LocalDateTime.now().minusDays(1))
+                .occupancyRate(0.8)
+                .build();
+
+        List<OccupancyHistory> history = List.of(occupancyHistory1, occupancyHistory2);
+
+        when(parkingRepository.findAll()).thenReturn(allParkings);
+        when(occupancyHistoryRepository.findRecentHistory(any(LocalDateTime.class))).thenReturn(history);
+
+        List<RecommendationResponse> result = recommendationService.generateRecommendations();
+
+        assertEquals(1, result.size());
+        assertEquals("Parking A", result.get(0).getName());
     }
 
     @Nested
