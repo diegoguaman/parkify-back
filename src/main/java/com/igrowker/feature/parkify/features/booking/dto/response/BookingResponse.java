@@ -18,10 +18,4 @@ public class BookingResponse {
     private OffsetDateTime requestedAt;
     private OffsetDateTime bookingTime;
     private OperationStatus status;
-
-    public BookingResponse(Long id, Object startDate, Object endDate) {
-    }
-
-    public <__TMP__> __TMP__ getId() {
-    return (__TMP__) bookingRequestId;}
 }
