@@ -21,4 +21,7 @@ public class BookingResponse {
 
     public BookingResponse(Long id, Object startDate, Object endDate) {
     }
+
+    public <__TMP__> __TMP__ getId() {
+    return (__TMP__) bookingRequestId;}
 }
