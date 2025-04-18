@@ -5,6 +5,10 @@ import com.igrowker.feature.parkify.features.parking.dto.request.ParkingRequest;
 import com.igrowker.feature.parkify.features.parking.dto.request.UpdateAvailabilityRequest;
 import com.igrowker.feature.parkify.features.parking.dto.response.*;
 import com.igrowker.feature.parkify.features.parking.service.ParkingService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -30,8 +34,10 @@ import java.util.List;
 
 @CrossOrigin(origins = "")
 @RestController
-@RequestMapping("/api/v1/parkings")
 @RequiredArgsConstructor
+@RequestMapping("/api/v1/parkings")
+@Tag(name = "Parking", description = "Operations related to parking services")
+
 public class ParkingController {
     private final ParkingService parkingService;
 
@@ -44,6 +50,15 @@ public class ParkingController {
     }
 
     //21
+    @Operation(
+            summary = "Get nearby parkings",
+            description = "Returns a paginated list of parkings near a specific geographic location."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "List of parkings found"),
+            @ApiResponse(responseCode = "400", description = "Invalid parameters"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping("/nearby")
     public ResponseEntity<PaginatedParkingResponse> getNearbyParkings(
             @RequestParam double lat,
