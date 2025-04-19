@@ -48,11 +48,17 @@ public class AuthServiceImpl implements AuthService {
         }
 
         AuthUser newUser = new AuthUser();
-        newUser.setUsername(request.username());
+//        newUser.setUsername(request.username());
         newUser.setEmail(request.email());
         newUser.setPassword(passwordEncoder.encode(request.password()));
-        newUser.setRole(Role.valueOf(request.role()));
-        newUser.setContactPhone(request.contactPhone());
+//        newUser.setRole(Role.valueOf(request.role()));
+//        newUser.setContactPhone(request.contactPhone());
+
+        newUser.setEmail(request.email());
+        newUser.setPassword(passwordEncoder.encode(request.password()));
+        newUser.setRole(Role.OWNER);
+        newUser.setUsername(request.username() != null ? request.username() : "Owner");
+        newUser.setContactPhone(request.contactPhone() != null ? request.contactPhone() : "");
 
         authUserRepository.save(newUser);
 

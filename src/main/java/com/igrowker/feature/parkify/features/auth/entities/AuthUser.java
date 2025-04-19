@@ -29,7 +29,7 @@ public class AuthUser {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column
     private String username;
 
     @NotBlank(message = "Email cannot be blank")
@@ -43,12 +43,12 @@ public class AuthUser {
     @ToString.Exclude
     private String password;
 
-    @NotNull(message = "Role cannot be null")
+//    @NotNull(message = "Role cannot be null")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
 
-    @NotBlank(message = "Contact phone cannot be blank")
+//    @NotBlank(message = "Contact phone cannot be blank")
     @Column(name = "contact_phone", nullable = false)
     private String contactPhone;
 
