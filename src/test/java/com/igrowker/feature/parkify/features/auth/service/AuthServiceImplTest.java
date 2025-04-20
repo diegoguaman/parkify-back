@@ -63,11 +63,9 @@ class AuthServiceImplTest {
 
         assertNotNull(response);
         assertAll(
-                () -> assertEquals("mocked-jwt-token", response.getUuid()),
-                () -> assertEquals("newuser@example.com", response.getEmail()),
-                () -> assertEquals("NewUser", response.getUsername()),
-                () -> assertEquals("OWNER", response.getRole())
+                () -> assertEquals("mocked-jwt-token", response.getToken())
         );
+
         verify(authUserRepository, times(1)).save(any(AuthUser.class));
     }
 

@@ -13,12 +13,13 @@ public class OpenApiConfig {
     @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
-                .info(new Info().title("Parkify API").version("v1"))
+                .info(new Info().title("Parkify API").version("v1").description("The Parkify API allows you to manage parking spaces, for owners, users, and reservations.."))
                 .components(new Components()
                         .addSecuritySchemes("bearerAuth", new SecurityScheme()
                                 .type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer")
                                 .bearerFormat("JWT")))
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"));
+
     }
 }

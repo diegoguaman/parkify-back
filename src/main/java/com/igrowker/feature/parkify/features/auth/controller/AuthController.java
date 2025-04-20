@@ -7,6 +7,11 @@ import com.igrowker.feature.parkify.features.auth.dto.response.LoginResponse;
 import com.igrowker.feature.parkify.features.auth.dto.response.RegisterResponse;
 import com.igrowker.feature.parkify.features.auth.dto.response.UserResponse;
 import com.igrowker.feature.parkify.features.auth.service.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,10 +24,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
 
+@Tag(name = "Authentication", description = "Endpoints related to user authentication and registration")
 @RestController
-@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 // @CrossOrigin(origins = "*") // TODO: Configurar CORS correctamente despues
+@RequestMapping("/api/v1/auth")
 public class AuthController {
 
     private final AuthService authService;
@@ -36,10 +42,28 @@ public class AuthController {
     }
 
     // #14, #15
+    @Operation(
+            summary = "Register a new user",
+            description = "Creates a new user account with the provided email and password. "
+                    + "Optional fields such as username and contact phone may also be provided."
+    )
+    @ApiResponse(
+            responseCode = "201",
+            description = "User registered successfully",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = RegisterResponse.class)
+            )
+    )
+    @ApiResponse(
+            responseCode = "400",
+            description = "Validation error or email already in use",
+            content = @Content(mediaType = "application/json")
+    )
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request){
         final RegisterResponse response = authService.register(request);
-        final URI location = uriBuilderService.buildUserLocationUri(response.getUuid());
+        final URI location = uriBuilderService.buildUserLocationUri(response.getToken());
         return ResponseEntity.created(location)
                 .body(response);
     }
