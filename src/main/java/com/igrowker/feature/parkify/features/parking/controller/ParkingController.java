@@ -6,6 +6,8 @@ import com.igrowker.feature.parkify.features.parking.dto.request.UpdateAvailabil
 import com.igrowker.feature.parkify.features.parking.dto.response.*;
 import com.igrowker.feature.parkify.features.parking.service.ParkingService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,11 +39,20 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/parkings")
 @Tag(name = "Parking", description = "Operations related to parking services")
-
 public class ParkingController {
     private final ParkingService parkingService;
 
     //#18
+    @Operation(
+            summary = "Get owner and parking information",
+            description = "Returns details of the authenticated owner and their associated parking. The owner's email is extracted from the JWT token."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Owner and parking details retrieved successfully",
+                    content = @Content(schema = @Schema(implementation = OwnerParkingDetailsResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized or invalid JWT token", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Owner or parking not found", content = @Content)
+    })
     @GetMapping("/owner/parking")
     public ResponseEntity<OwnerParkingDetailsResponse> getOwnerWithParking(Authentication authentication) {
         String ownerEmail = authentication.getName();
@@ -172,6 +183,17 @@ public class ParkingController {
     }
 
     // #27
+    @Operation(
+            summary = "Update parking availability",
+            description = "Allows the authenticated owner to update the number of available spots in their parking."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Availability updated successfully",
+                    content = @Content(schema = @Schema(implementation = ParkingAvailabilityResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid request data", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized or invalid JWT token", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Owner or parking not found", content = @Content)
+    })
     @PatchMapping("/my/availability")
     public ResponseEntity<ParkingAvailabilityResponse> updateMyParkingAvailability(
             @Valid @RequestBody UpdateAvailabilityRequest request,

@@ -48,11 +48,9 @@ public class AuthServiceImpl implements AuthService {
         }
 
         AuthUser newUser = new AuthUser();
-//        newUser.setUsername(request.username());
+
         newUser.setEmail(request.email());
         newUser.setPassword(passwordEncoder.encode(request.password()));
-//        newUser.setRole(Role.valueOf(request.role()));
-//        newUser.setContactPhone(request.contactPhone());
 
         newUser.setEmail(request.email());
         newUser.setPassword(passwordEncoder.encode(request.password()));
@@ -70,12 +68,7 @@ public class AuthServiceImpl implements AuthService {
 
         String token = jwtService.generateToken(userDetails);
 
-        return new RegisterResponse(
-                token,
-                newUser.getEmail(),
-                newUser.getUsername(),
-                newUser.getRole().name()
-        );
+        return new RegisterResponse(token);
     }
 
     @Override

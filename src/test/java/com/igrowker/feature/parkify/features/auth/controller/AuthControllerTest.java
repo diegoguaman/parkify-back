@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -39,7 +40,6 @@ class AuthControllerTest {
 
     private LoginRequest loginRequest;
     private final String testToken = "mockJwtToken123";
-    private String expectedUuid = "Token123";
     private RegisterRequest registerRequest;
     private RegisterResponse registerResponse;
 
@@ -53,10 +53,8 @@ class AuthControllerTest {
                 );
 
         registerResponse = new RegisterResponse(
-                "Token123",
-                "krisel@example.com",
-                "kris",
-                "OWNER"
+                "Token123"
+
         );
     }
 
@@ -89,10 +87,11 @@ class AuthControllerTest {
     }
 
     @Test
-    void register_Success_ShouldReturnCreatedWithRegisterResponse() { // Переименовали для ясности
-        final URI mockLocation = URI.create("http://mock-location/api/v1/users/" + expectedUuid);
-        when(uriBuilderService.buildUserLocationUri(expectedUuid)).thenReturn(mockLocation);
-        when(authService.register(any(RegisterRequest.class))).thenReturn(registerResponse);
+    void register_Success_ShouldReturnCreatedWithToken() {
+        final URI mockLocation = URI.create("http://mock-location/api/v1/users/12345");
+        when(uriBuilderService.buildUserLocationUri(anyString())).thenReturn(mockLocation);
+
+        when(authService.register(any(RegisterRequest.class))).thenReturn(new RegisterResponse("mockJwtToken123"));
 
         final ResponseEntity<RegisterResponse> responseEntity = authController.register(registerRequest);
 
@@ -100,11 +99,9 @@ class AuthControllerTest {
                 () -> assertNotNull(responseEntity),
                 () -> assertEquals(HttpStatus.CREATED, responseEntity.getStatusCode()),
                 () -> assertNotNull(responseEntity.getBody()),
-                () -> assertEquals(registerResponse.getUuid(), responseEntity.getBody().getUuid()),
-                () -> assertEquals(registerResponse.getEmail(), responseEntity.getBody().getEmail()),
-                () -> assertEquals(registerResponse.getUsername(), responseEntity.getBody().getUsername()),
-                () -> assertEquals(registerResponse.getRole(), responseEntity.getBody().getRole())
+                () -> assertEquals("mockJwtToken123", responseEntity.getBody().getToken())
         );
+
         verify(authService, times(1)).register(registerRequest);
     }
 

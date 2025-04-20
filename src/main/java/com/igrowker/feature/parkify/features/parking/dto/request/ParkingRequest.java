@@ -1,6 +1,7 @@
 package com.igrowker.feature.parkify.features.parking.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 @Data
@@ -16,7 +17,9 @@ public class ParkingRequest {
     private Double rateHour;
     private int available;
     private String whatsapp;
+    @Schema(description = "Owner ID of the parking", required = true)
     private Long ownerId;
     private Long parkingId;
+    @Schema(description = "Number of available spots for parking", required = true)
     private int availableSpots;
 }
