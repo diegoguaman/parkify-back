@@ -1,4 +1,4 @@
-name: Build and Push Backend
+name: Build and Deploy Backend
 
 on:
   push:
@@ -7,42 +7,38 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
+  build-and-deploy:
+    runs-on: [self-hosted, linux, gcp]  # Etiquetas del runner que configuramos en la VM
 
     steps:
-      - name: Checkout repo     # Clona el repositorio
-        uses: actions/checkout@v4     
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-      - name: Autenticarse en GCP   # Autentica en la nube
-        uses: google-github-actions/auth@v2   
-        with:
-          credentials_json: '${{ secrets.GCP_SA_KEY }}'
-
-      - name: Instalar gcloud CLI     # Instala y configura la cli de GCP
-        uses: google-github-actions/setup-gcloud@v1
-        with:
-          project_id: training-batch-05
-
-      - name: Configurar Docker para Artifact Registry      # push y pull desde Artifact Registry en la región southamerica-east1 
+      - name: Login en Artifact Registry
         run: |
+          gcloud auth activate-service-account --key-file=gha-creds.json
           gcloud auth configure-docker southamerica-east1-docker.pkg.dev
 
-      - name: Construir imagen del backend      # Construye una imagen Docker desde el Dockerfile
+      - name: Construir imagen Docker
         run: |
           docker build -t southamerica-east1-docker.pkg.dev/training-batch-05/parkify-backend/spring-boot:latest .
 
-      - name: Subir imagen al Artifact Registry     # Guarda la imagen en Artifact
+      - name: Subir imagen a Artifact Registry
         run: |
           docker push southamerica-east1-docker.pkg.dev/training-batch-05/parkify-backend/spring-boot:latest
 
-      - name: Desplegar en Cloud Run
+      - name: Detener contenedor anterior si existe
         run: |
-          gcloud run deploy spring-boot-backend \
-            --image=southamerica-east1-docker.pkg.dev/training-batch-05/parkify-backend/spring-boot:latest \
-            --platform=managed \
-            --region=southamerica-east1 \
-            --allow-unauthenticated \
-            --project=training-batch-05 \
-            --set-env-vars=SPRING_PROFILES_ACTIVE=${{ secrets.SPRING_PROFILES_ACTIVE }},SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }},SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }},SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }}
-        
+          docker stop spring-boot || true
+          docker rm spring-boot || true
+
+      - name: Correr contenedor actualizado
+        run: |
+          docker run -d \
+            --name spring-boot \
+            -p 8080:8080 \
+            -e SPRING_PROFILES_ACTIVE=${{ secrets.SPRING_PROFILES_ACTIVE }} \
+            -e SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }} \
+            -e SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }} \
+            -e SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }} \
+            southamerica-east1-docker.pkg.dev/training-batch-05/parkify-backend/spring-boot:latest
