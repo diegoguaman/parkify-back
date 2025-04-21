@@ -2,8 +2,12 @@ name: Build and Deploy Backend
 
 on:
   push:
+    branches:name: Build and Deploy Backend
+
+on:
+  push:
     branches:
-      - ci-testing
+      - ci-testing  # ✅ Cambiá esto a tu rama de pruebas
   workflow_dispatch:
 
 jobs:
@@ -14,12 +18,13 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Crear archivo de credenciales
-        run: echo "${{ secrets.GCP_SA_KEY }}" > gha-creds.json
+      - name: Autenticarse en GCP con Service Account
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Login en Artifact Registry
+      - name: Configurar Docker con Artifact Registry
         run: |
-          gcloud auth activate-service-account --key-file=gha-creds.json
           gcloud auth configure-docker southamerica-east1-docker.pkg.dev
 
       - name: Construir imagen Docker
@@ -45,4 +50,5 @@ jobs:
             -e SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }} \
             -e SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }} \
             southamerica-east1-docker.pkg.dev/training-batch-05/parkify-backend/spring-boot:latest
+
 
