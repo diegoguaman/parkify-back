@@ -97,18 +97,7 @@ public class ParkingServiceImpl implements ParkingService {
                 .orElseThrow(() -> new OwnerNotFoundException(
                         "Owner not found with id: " + parking.getOwnerId()
                 ));
-        return ParkingDetailsResponse.builder()
-                .id(parking.getId().toString())
-                .name(parking.getName())
-                .address(parking.getAddress())
-                .location(new LocationDto(parking.getLatitude(), parking.getLongitude()))
-                .description(parking.getDescription())
-                .capacity(parking.getCapacity())
-                .currentAvailability(ofNullable(parking.getAvailableSpots()).orElse(0))
-                .hourlyRate(parking.getHourlyRate())
-                .workingHours(parking.getWorkingHours())
-                .ownerId(owner.getId().toString())
-                .build();
+        return mapParkingToDetailsResponse(parking, owner);
     }
 
     @Override
@@ -116,7 +105,7 @@ public class ParkingServiceImpl implements ParkingService {
     public ParkingResponse createMyParking(@Valid CreateMyParkingRequest request, String ownerEmail) {
         final AuthUser owner = authUserRepository.findByEmail(ownerEmail)
                 .orElseThrow(() -> new OwnerNotFoundException(
-                        "Authenticated owner not found with email: " + ownerEmail
+                        AUTHENTICATED_OWNER_NOT_FOUND_WITH_EMAIL + ownerEmail
                 ));
         final Parking parking = Parking.builder()
                 .name(request.getName())
@@ -129,6 +118,8 @@ public class ParkingServiceImpl implements ParkingService {
                 .workingHours(request.getWorkingHours())
                 .ownerId(owner.getId())
                 .availableSpots(request.getCapacity())
+                .parkingPhone(request.getParkingPhone())
+                .parkingImageUrl(request.getParkingImageUrl())
                 .build();
         final Parking savedParking = parkingRepository.save(parking);
 
@@ -204,6 +195,8 @@ public class ParkingServiceImpl implements ParkingService {
                             .hourlyRate(p.getHourlyRate())
                             .currentAvailability(availability)
                             .distance(pwd.distance())
+                            .parkingPhone(p.getParkingPhone())
+                            .parkingImageUrl(p.getParkingImageUrl())
                             .build();
                 })
                 .toList();
@@ -228,10 +221,47 @@ public class ParkingServiceImpl implements ParkingService {
 
 
     @Override
+    @Transactional
     public ParkingAvailabilityResponse updateMyParkingAvailability(
-            String ownerEmail, Integer availableSpots
+            String ownerEmail,
+            Integer availableSpots
     ) {
-        return null;
+        final AuthUser owner = authUserRepository.findByEmail(ownerEmail)
+                .orElseThrow(() -> new OwnerNotFoundException(
+                        AUTHENTICATED_OWNER_NOT_FOUND_WITH_EMAIL + ownerEmail
+                ));
+        final Parking parking = parkingRepository.findByOwnerId(owner.getId())
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new ParkingNotFoundException(
+                        "Parking not found for owner with email: " + ownerEmail
+                ));
+        if (availableSpots > parking.getCapacity()) {
+            throw new IllegalArgumentException(
+                    String.format("Available spots (%d) cannot exceed capacity (%d)",
+                            availableSpots, parking.getCapacity())
+            );
+        }
+        parking.setAvailableSpots(availableSpots);
+        parkingRepository.save(parking);
+        return new ParkingAvailabilityResponse(parking.getId(), parking.getAvailableSpots());
+    }
+
+    @Override
+    @Transactional
+    public void deleteMyParking(String ownerEmail) {
+        final AuthUser owner = authUserRepository.findByEmail(ownerEmail)
+                .orElseThrow(() -> new OwnerNotFoundException(
+                        AUTHENTICATED_OWNER_NOT_FOUND_WITH_EMAIL + ownerEmail
+                ));
+        final Parking parking = parkingRepository.findByOwnerId(owner.getId())
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new ParkingNotFoundException(
+                        "Parking not found for owner with email: " + ownerEmail + " to delete."
+                ));
+
+        parkingRepository.deleteById(parking.getId());
     }
 
     @Override
@@ -239,7 +269,7 @@ public class ParkingServiceImpl implements ParkingService {
     public ParkingDetailsResponse getMyParkingDetails(String ownerEmail) {
         final AuthUser owner = authUserRepository.findByEmail(ownerEmail)
                 .orElseThrow(() -> new OwnerNotFoundException(
-                        "Authenticated owner not found with email: " + ownerEmail
+                        AUTHENTICATED_OWNER_NOT_FOUND_WITH_EMAIL + ownerEmail
                 ));
 
         final List<Parking> parkings = parkingRepository.findByOwnerId(owner.getId());
@@ -269,6 +299,8 @@ public class ParkingServiceImpl implements ParkingService {
                 .hourlyRate(parking.getHourlyRate())
                 .workingHours(parking.getWorkingHours())
                 .ownerId(owner.getId())
+                .parkingPhone(parking.getParkingPhone())
+                .parkingImageUrl(parking.getParkingImageUrl())
                 .build();
     }
 
@@ -320,6 +352,8 @@ public class ParkingServiceImpl implements ParkingService {
                 .hourlyRate(parking.getHourlyRate())
                 .workingHours(parking.getWorkingHours())
                 .ownerId(owner.getId().toString())
+                .parkingPhone(parking.getParkingPhone())
+                .parkingImageUrl(parking.getParkingImageUrl())
                 .build();
     }
 
