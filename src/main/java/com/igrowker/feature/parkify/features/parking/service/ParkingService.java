@@ -9,9 +9,12 @@ import com.igrowker.feature.parkify.features.parking.dto.response.PaginatedParki
 import com.igrowker.feature.parkify.features.parking.dto.response.ParkingAvailabilityResponse;
 import com.igrowker.feature.parkify.features.parking.dto.response.ParkingDetailsResponse;
 import com.igrowker.feature.parkify.features.parking.dto.response.ParkingResponse;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 public interface ParkingService {
 
@@ -67,6 +70,18 @@ public interface ParkingService {
      * @throws ParkingNotFoundException if the owner has no associated parking to delete.
      */
     void deleteMyParking(String ownerEmail);
+
+    /**
+     * Retrieves the current availability for a list of parking facilities.
+     *
+     * @param parkingIds A list of parking IDs to query. Must not be empty.
+     * @return A list of DTOs containing availability information for the found parkings.
+     *         Parkings not found for the given IDs will be omitted from the result.
+     */
+    List<ParkingAvailabilityResponse> getParkingsAvailability(
+            @NotEmpty(message = "List of parking IDs cannot be empty")
+            List<Long> parkingIds
+    );
 
     ParkingDetailsResponse getMyParkingDetails(String ownerEmail);
 
