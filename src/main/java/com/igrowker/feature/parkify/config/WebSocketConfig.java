@@ -12,7 +12,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         // Aquí se pasa la dirección de tu frontend como permitido para el CORS
-        registry.addHandler(new SimpleWebSocketHandler(), "/ws")
+        registry.addHandler(new YourWebSocketHandler(), "/ws")
                 .setAllowedOrigins("*");  // Cambia la URL por la de tu frontend
     }
 }
