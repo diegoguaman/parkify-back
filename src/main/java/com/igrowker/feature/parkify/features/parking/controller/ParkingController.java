@@ -439,28 +439,58 @@ public class ParkingController {
     }
 
     @Operation(
-            summary = "Update Specific Parking (PUT)", // Изменили summary
-            description = "Allows an authenticated OWNER to completely update the editable details of a specific parking facility identified by its ID. Requires sending ALL editable fields." // Изменили описание
+            summary = "Update Specific Parking (PUT)",
+            description = "Allows an authenticated OWNER to completely update the editable " +
+                    "details of a specific parking facility identified by its ID. Requires " +
+                    "sending ALL editable fields."
     )
-    @Parameter(name = "parkingId", description = "ID of the parking to update", required = true, in = ParameterIn.PATH)
-    // Добавили параметр пути
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Complete updated details for the parking", required = true,
-            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+    @Parameter
+            (name = "parkingId",
+            description = "ID of the parking to update",
+            required = true, in = ParameterIn.PATH
+            )
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Complete updated details for the parking", required = true,
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON_VALUE,
                     schema = @Schema(implementation = UpdateMyParkingRequest.class)))
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Parking updated successfully",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Parking updated successfully",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = ParkingResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid request data (validation error, e.g., capacity conflict)",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "403", description = "Forbidden (Not an OWNER or not the owner of this parking)", // Уточнили 403
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Owner or Parking not found", // Уточнили 404
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class)))
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid request data (validation error, e.g., capacity conflict)",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(
+                                    implementation = GlobalExceptionHandler.ErrorResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized"),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden (Not an OWNER or not the owner of this parking)",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(
+                                    implementation = GlobalExceptionHandler.ErrorResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Owner or Parking not found",
+                    content = @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(
+                                    implementation = GlobalExceptionHandler.ErrorResponse.class)
+                    )
+            )
     })
     @PutMapping("/{parkingId}")
     public ResponseEntity<ParkingResponse> updateSpecificParking(

@@ -466,33 +466,20 @@ public class ParkingServiceImpl implements ParkingService {
 
     @Override
     @Transactional
-    public ParkingResponse updateMyParking(String ownerEmail, Long parkingId, @Valid UpdateMyParkingRequest request) {
+    public ParkingResponse updateMyParking(
+            String ownerEmail, Long parkingId, @Valid UpdateMyParkingRequest request
+    ) {
         log.info("Attempting to update parking ID {} for owner {}", parkingId, ownerEmail);
-
-        // 1. Найти владельца
         final AuthUser owner = findOwnerByEmail(ownerEmail);
-
-        // 2. Найти парковку по ID
         final Parking parking = findParkingById(parkingId);
-
-        // 3. Проверить владение
         ensureOwnership(owner, parking, ownerEmail);
-
-        // 4. Обновить поля парковки (кроме capacity и availableSpots пока)
         updateParkingFields(parking, request);
-
-        // 5. Обработать изменение Capacity с валидацией
         updateCapacityIfNeeded(parking, request.capacity());
-
-        // 6. Сохранить
         final Parking updatedParking = parkingRepository.save(parking);
         log.info("Parking {} successfully updated by owner {}", updatedParking.getId(), ownerEmail);
 
-        // 7. Смапить в DTO ответа и вернуть
         return mapToFlatParkingResponse(updatedParking, owner);
     }
-
-    // --- Вспомогательные приватные методы для улучшения читаемости updateMyParking ---
 
     private AuthUser findOwnerByEmail(String ownerEmail) {
         return authUserRepository.findByEmail(ownerEmail)
@@ -512,10 +499,13 @@ public class ParkingServiceImpl implements ParkingService {
 
     private void ensureOwnership(AuthUser owner, Parking parking, String ownerEmailForLogging) {
         if (!parking.getOwnerId().equals(owner.getId())) {
-            log.warn("Access denied: Owner {} (ID {}) attempted to modify parking {} which belongs to owner ID {}",
-                    ownerEmailForLogging, owner.getId(), parking.getId(), parking.getOwnerId());
+            log.warn("Access denied: Owner {} (ID {}) attempted to modify parking " +
+                            "{} which belongs to owner ID {}",
+                    ownerEmailForLogging, owner.getId(), parking.getId(), parking.getOwnerId()
+            );
             throw new AccessDeniedException(String.format(
-                    "User %s is not authorized to modify parking with id %d", ownerEmailForLogging, parking.getId()
+                    "User %s is not authorized to modify parking with id %d",
+                    ownerEmailForLogging, parking.getId()
             ));
         }
     }
@@ -533,23 +523,27 @@ public class ParkingServiceImpl implements ParkingService {
     }
 
     private void updateCapacityIfNeeded(Parking parking, Integer newCapacity) {
-        // Проверяем, только если capacity действительно изменилась
         if (!parking.getCapacity().equals(newCapacity)) {
             Integer currentAvailable = Optional.ofNullable(parking.getAvailableSpots())
-                    .orElse(parking.getCapacity()); // Используем capacity, если available null
+                    .orElse(parking.getCapacity());
 
             if (currentAvailable > newCapacity) {
-                log.warn("Capacity update failed for parking {}: requested capacity {} < current available {}",
+                log.warn("Capacity update failed for parking {}: requested capacity {} " +
+                                "< current available {}",
                         parking.getId(), newCapacity, currentAvailable);
                 throw new IllegalArgumentException(
-                        String.format("Cannot set capacity (%d) lower than current available spots (%d). Please update available spots first.",
+                        String.format("Cannot set capacity (%d) lower than current available " +
+                                        "spots (%d). Please update available spots first.",
                                 newCapacity, currentAvailable)
                 );
             }
             parking.setCapacity(newCapacity);
             log.debug("Parking {} capacity updated to {}", parking.getId(), newCapacity);
         } else {
-            log.debug("Capacity for parking {} not changed (remains {}). Skipping validation.", parking.getId(), newCapacity);
+            log.debug(
+                    "Capacity for parking {} not changed (remains {}). Skipping validation.",
+                    parking.getId(), newCapacity
+            );
         }
     }
 
