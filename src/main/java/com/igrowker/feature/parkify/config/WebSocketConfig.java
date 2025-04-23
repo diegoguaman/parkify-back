@@ -15,7 +15,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
         if (frontendUrl == null || frontendUrl.isEmpty()) {
             frontendUrl = "http://localhost:5173";
         }
-        registry.addHandler(new YourWebSocketHandler(), "/ws/")
+        registry.addHandler(new YourWebSocketHandler(), "/ws")
                 .setAllowedOrigins(frontendUrl);
     }
 }
