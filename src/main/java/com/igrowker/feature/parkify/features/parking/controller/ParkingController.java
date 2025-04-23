@@ -27,6 +27,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -209,7 +210,7 @@ public class ParkingController {
     @ApiResponse(responseCode = "404", description = "Parking facility not found with the ID provided in the request body (`parkingId`).",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                     schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class)))
-//    @Deprecated(since = "2025.04.10")
+    @Deprecated(since = "2025.04.24")
     @PutMapping("/update-availability")
     public ResponseEntity<ParkingResponse> updateAvailability(
             @RequestBody ParkingRequest request) {
@@ -284,17 +285,68 @@ public class ParkingController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "Delete My Parking",
+            description = "Allows the authenticated owner to delete their own parking facility."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Parking deleted successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized"
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden (Not an OWNER)"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Owner or their parking not found",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(
+                                    implementation = GlobalExceptionHandler.ErrorResponse.class)
+                    )
+            )
+    })
+    @DeleteMapping("/my")
+    public ResponseEntity<Void> deleteMyParking(Authentication authentication) {
+        String ownerEmail = authentication.getName();
+        parkingService.deleteMyParking(ownerEmail);
+        return ResponseEntity.noContent().build();
+    }
+
     // #27
     @Operation(
             summary = "Update parking availability",
-            description = "Allows the authenticated owner to update the number of available spots in their parking."
+            description = "Allows the authenticated owner to update the number of available spots " +
+                    "in their parking."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Availability updated successfully",
-                    content = @Content(schema = @Schema(implementation = ParkingAvailabilityResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid request data", content = @Content),
-            @ApiResponse(responseCode = "401", description = "Unauthorized or invalid JWT token", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Owner or parking not found", content = @Content)
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Availability updated successfully",
+                    content = @Content(schema = @Schema(
+                            implementation = ParkingAvailabilityResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid request data",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized or invalid JWT token",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Owner or parking not found",
+                    content = @Content
+            )
     })
     @PatchMapping("/my/availability")
     public ResponseEntity<ParkingAvailabilityResponse> updateMyParkingAvailability(
