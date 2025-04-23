@@ -7,7 +7,6 @@ import com.igrowker.feature.parkify.websocket.YourWebSocketHandler;
 
 @Configuration
 @EnableWebSocket
-@Component
 public class WebSocketConfig implements WebSocketConfigurer {
 
     private final YourWebSocketHandler yourWebSocketHandler;
