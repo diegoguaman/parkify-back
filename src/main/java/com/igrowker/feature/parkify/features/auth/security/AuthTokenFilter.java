@@ -63,10 +63,4 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         }
         filterChain.doFilter(request, response);
     }
-    
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        // Ignorar el filtro para conexiones WebSocket
-        return request.getRequestURI().startsWith("/ws");
-    }
 }
