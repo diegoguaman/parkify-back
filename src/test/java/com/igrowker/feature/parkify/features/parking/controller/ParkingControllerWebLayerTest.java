@@ -382,7 +382,7 @@ class ParkingControllerWebLayerTest {
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.status", is(500)))
                     .andExpect(jsonPath("$.error", is("Internal Server Error")))
-                    .andExpect(jsonPath("$.message", is("An unexpected error occurred")))
+                    .andExpect(jsonPath("$.message", is("El correo electrónico ya está registrado.")))
                     .andExpect(jsonPath("$.path", is("/api/v1/parkings/my")));
 
             verify(parkingService, times(1))

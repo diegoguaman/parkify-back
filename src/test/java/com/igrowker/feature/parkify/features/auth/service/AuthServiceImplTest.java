@@ -78,7 +78,7 @@ class AuthServiceImplTest {
                 authService.register(registerRequest)
         );
 
-        assertEquals("Email is already in usenewuser@example.com", exception.getMessage());
+        assertEquals("El correo electrónico ya está registrado.", exception.getMessage());
         verify(authUserRepository, never()).save(any());
     }
 }
