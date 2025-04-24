@@ -14,9 +14,13 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Login en Artifact Registry
+      - name: Autenticarse en GCP con Service Account
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Configurar Docker con Artifact Registry
         run: |
-          gcloud auth activate-service-account --key-file=gha-creds.json
           gcloud auth configure-docker southamerica-east1-docker.pkg.dev
 
       - name: Construir imagen Docker
@@ -41,4 +45,7 @@ jobs:
             -e SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }} \
             -e SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }} \
             -e SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }} \
+            -e FRONTEND_URL=${{ secrets.FRONTEND_URL }} \
             southamerica-east1-docker.pkg.dev/training-batch-05/parkify-backend/spring-boot:latest
+
+
