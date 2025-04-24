@@ -49,7 +49,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public RegisterResponse register(RegisterRequest request) {
         if (authUserRepository.findByEmail(request.email()).isPresent()) {
-            throw new EmailAlreadyExistsException("Email is already in use" + request.email());
+            throw new EmailAlreadyExistsException("El correo electrónico ya está registrado.");
         }
 
         AuthUser newUser = new AuthUser();

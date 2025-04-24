@@ -306,7 +306,6 @@ public class ParkingServiceImpl implements ParkingService {
             );
         }
 
-        // Suponemos que quieres devolver solo uno (el primero)
         final Parking parking = parkings.get(0);
 
         return mapParkingToDetailsResponse(parking, owner);
@@ -342,8 +341,7 @@ public class ParkingServiceImpl implements ParkingService {
             throw new ParkingNotFoundException("Parking not found for owner");
         }
 
-        // Si tienes varios parkings y solo quieres el primero
-        Parking parking = parkings.get(0);  // O puedes elegir otro criterio para seleccionar el parking
+        Parking parking = parkings.get(0);
         ParkingResponse parkingResponse = ParkingResponse.builder()
                 .id(parking.getId())
                 .name(parking.getName())
@@ -365,6 +363,7 @@ public class ParkingServiceImpl implements ParkingService {
                 .parking(parkingResponse)
                 .build();
     }
+
 
     private ParkingDetailsResponse mapParkingToDetailsResponse(Parking parking, AuthUser owner) {
         return ParkingDetailsResponse.builder()
