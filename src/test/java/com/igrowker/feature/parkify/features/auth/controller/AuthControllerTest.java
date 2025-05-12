@@ -16,13 +16,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.net.URI;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -39,24 +39,33 @@ class AuthControllerTest {
     private AuthController authController;
 
     private LoginRequest loginRequest;
-    private final String testToken = "mockJwtToken123";
     private final String testEmail = "test@example.com";
     private RegisterRequest registerRequest;
+    private final String expectedUserId = "12345";
+    private final String expectedUsername = "kris";
+    private final String expectedEmailForRegister = "kris@example.com";
+    private final String expectedRole = "OWNER";
+    private final String expectedPhone = "0123456789";
+    private final LocalDateTime mockCreatedAt = LocalDateTime.now().minusDays(1);
+    private final LocalDateTime mockUpdatedAt = LocalDateTime.now();
 
     @BeforeEach
     void setUp() {
         loginRequest = new LoginRequest(testEmail, "password");
-
         registerRequest = new RegisterRequest(
-                "kris", "kris@example.com", "Password",
-                "role", "0123456789"
-                );
+                expectedUsername,
+                expectedEmailForRegister,
+                "Password",
+                expectedRole,
+                expectedPhone
+        );
     }
 
     @Test
     void login_Success_ShouldReturnOkWithToken() {
+        String localTestToken = "mockJwtToken123";
         when(authService.login(any(LoginRequest.class)))
-                .thenReturn(new LoginResponse(testToken, testEmail));
+                .thenReturn(new LoginResponse(localTestToken, testEmail));
 
         final ResponseEntity<LoginResponse> response = authController.login(loginRequest);
 
@@ -64,7 +73,8 @@ class AuthControllerTest {
                 () -> assertNotNull(response),
                 () -> assertEquals(HttpStatus.OK, response.getStatusCode()),
                 () -> assertNotNull(response.getBody()),
-                () -> assertEquals(testToken, response.getBody().token())
+                () -> assertEquals(localTestToken, response.getBody().token()),
+                () -> assertEquals(testEmail, response.getBody().email())
         );
         verify(authService, times(1)).login(loginRequest);
     }
@@ -83,11 +93,20 @@ class AuthControllerTest {
     }
 
     @Test
-    void register_Success_ShouldReturnCreatedWithToken() {
-        final URI mockLocation = URI.create("http://mock-location/api/v1/users/12345");
-        when(uriBuilderService.buildUserLocationUri(anyString())).thenReturn(mockLocation);
+    void register_Success_ShouldReturnCreatedWithUserData() {
+        final URI mockLocation = URI.create("http://mock-location/api/v1/users/" + expectedUserId);
+        when(uriBuilderService.buildUserLocationUri(expectedUserId)).thenReturn(mockLocation);
 
-        when(authService.register(any(RegisterRequest.class))).thenReturn(new RegisterResponse("mockJwtToken123"));
+        final RegisterResponse mockServiceResponse = RegisterResponse.builder()
+                .id(expectedUserId)
+                .username(expectedUsername)
+                .email(expectedEmailForRegister)
+                .role(expectedRole)
+                .contactPhone(expectedPhone)
+                .createdAt(mockCreatedAt)
+                .updatedAt(mockUpdatedAt)
+                .build();
+        when(authService.register(any(RegisterRequest.class))).thenReturn(mockServiceResponse);
 
         final ResponseEntity<RegisterResponse> responseEntity = authController.register(registerRequest);
 
@@ -95,10 +114,19 @@ class AuthControllerTest {
                 () -> assertNotNull(responseEntity),
                 () -> assertEquals(HttpStatus.CREATED, responseEntity.getStatusCode()),
                 () -> assertNotNull(responseEntity.getBody()),
-                () -> assertEquals("mockJwtToken123", responseEntity.getBody().getToken())
+                () -> assertEquals(expectedUserId, responseEntity.getBody().getId()),
+                () -> assertEquals(expectedUsername, responseEntity.getBody().getUsername()),
+                () -> assertEquals(expectedEmailForRegister, responseEntity.getBody().getEmail()),
+                () -> assertEquals(expectedRole, responseEntity.getBody().getRole()),
+                () -> assertEquals(expectedPhone, responseEntity.getBody().getContactPhone()),
+                () -> assertEquals(mockCreatedAt, responseEntity.getBody().getCreatedAt()),
+                () -> assertEquals(mockUpdatedAt, responseEntity.getBody().getUpdatedAt()),
+                () -> assertEquals(mockLocation, responseEntity.getHeaders().getLocation())
         );
 
         verify(authService, times(1)).register(registerRequest);
+        verify(uriBuilderService, times(1))
+                .buildUserLocationUri(expectedUserId);
     }
 
     @Test
@@ -114,5 +142,4 @@ class AuthControllerTest {
         assertEquals(expectedException, thrownException);
         verify(authService, times(1)).register(registerRequest);
     }
-
 }

@@ -10,9 +10,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -43,12 +49,10 @@ public class AuthUser {
     @ToString.Exclude
     private String password;
 
-//    @NotNull(message = "Role cannot be null")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
 
-//    @NotBlank(message = "Contact phone cannot be blank")
     @Column(name = "contact_phone", nullable = false)
     private String contactPhone;
 
@@ -58,7 +62,12 @@ public class AuthUser {
     @Column(name = "longitude")
     private Double longitude;
 
-    @Column(name = "location_updated_at")
-    private LocalDateTime locationUpdatedAt;
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
 
 }

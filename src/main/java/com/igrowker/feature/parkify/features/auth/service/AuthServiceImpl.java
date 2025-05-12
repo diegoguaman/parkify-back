@@ -3,7 +3,6 @@ package com.igrowker.feature.parkify.features.auth.service;
 import com.igrowker.feature.parkify.exception.EmailAlreadyExistsException;
 import com.igrowker.feature.parkify.features.auth.dto.request.LoginRequest;
 import com.igrowker.feature.parkify.features.auth.dto.request.RegisterRequest;
-import com.igrowker.feature.parkify.features.auth.dto.request.UpdateEmailRequest;
 import com.igrowker.feature.parkify.features.auth.dto.response.LoginResponse;
 import com.igrowker.feature.parkify.features.auth.dto.response.RegisterResponse;
 import com.igrowker.feature.parkify.features.auth.dto.response.UserResponse;
@@ -14,14 +13,11 @@ import com.igrowker.feature.parkify.features.auth.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -50,31 +46,27 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public RegisterResponse register(RegisterRequest request) {
         if (authUserRepository.findByEmail(request.email()).isPresent()) {
-            throw new EmailAlreadyExistsException("El correo electrónico ya está registrado.");
+            throw new EmailAlreadyExistsException("This email already registered.");
         }
 
-        AuthUser newUser = new AuthUser();
+        final AuthUser newUser = AuthUser.builder()
+                .email(request.email())
+                .password(passwordEncoder.encode(request.password()))
+                .role(request.role() != null ? Role.valueOf(request.role()) : Role.OWNER)
+                .username(request.username() != null ? request.username() : "")
+                .contactPhone(request.contactPhone() != null ? request.contactPhone() : "")
+                .build();
+        final AuthUser savedUser = authUserRepository.save(newUser);
 
-        newUser.setEmail(request.email());
-        newUser.setPassword(passwordEncoder.encode(request.password()));
-
-        newUser.setEmail(request.email());
-        newUser.setPassword(passwordEncoder.encode(request.password()));
-        newUser.setRole(Role.OWNER);
-        newUser.setUsername(request.username() != null ? request.username() : "Owner");
-        newUser.setContactPhone(request.contactPhone() != null ? request.contactPhone() : "");
-
-        authUserRepository.save(newUser);
-
-        UserDetails userDetails = new org.springframework.security.core.userdetails.User(
-                newUser.getEmail(),
-                newUser.getPassword(),
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + newUser.getRole().name()))
-        );
-
-        String token = jwtService.generateToken(userDetails);
-
-        return new RegisterResponse(token);
+        return RegisterResponse.builder()
+                .id(String.valueOf(savedUser.getId()))
+                .username(savedUser.getUsername())
+                .email(savedUser.getEmail())
+                .role(savedUser.getRole().name())
+                .contactPhone(savedUser.getContactPhone())
+                .createdAt(savedUser.getCreatedAt())
+                .updatedAt(savedUser.getUpdatedAt())
+                .build();
     }
 
     @Override
@@ -86,10 +78,12 @@ public class AuthServiceImpl implements AuthService {
                 );
         return UserResponse.builder()
                 .id(String.valueOf(authUser.getId()))
-                .name(authUser.getUsername())
+                .username(authUser.getUsername())
                 .email(authUser.getEmail())
                 .role(authUser.getRole().name())
                 .contactPhone(authUser.getContactPhone())
+                .createdAt(authUser.getCreatedAt())
+                .updatedAt(authUser.getUpdatedAt())
                 .build();
     }
 

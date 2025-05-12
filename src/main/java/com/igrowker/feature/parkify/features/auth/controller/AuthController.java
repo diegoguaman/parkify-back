@@ -10,7 +10,6 @@ import com.igrowker.feature.parkify.features.auth.dto.response.RegisterResponse;
 import com.igrowker.feature.parkify.features.auth.dto.response.UserResponse;
 import com.igrowker.feature.parkify.features.auth.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -23,7 +22,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
 
@@ -102,7 +106,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
         final RegisterResponse response = authService.register(request);
-        final URI location = uriBuilderService.buildUserLocationUri(response.getToken());
+        final URI location = uriBuilderService.buildUserLocationUri(response.getId());
         return ResponseEntity.created(location)
                 .body(response);
     }
