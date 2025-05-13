@@ -1,18 +1,22 @@
 package com.igrowker.feature.parkify.features.auth.dto.response;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+
+import java.time.LocalDateTime;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserResponse {
     private String id;
-    private String name;
+    private String username;
     private String email;
     private String role;
     private String contactPhone;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
