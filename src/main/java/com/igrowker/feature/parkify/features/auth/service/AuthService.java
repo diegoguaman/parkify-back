@@ -13,5 +13,5 @@ public interface AuthService {
     RegisterResponse register(RegisterRequest request);
     UserResponse getCurrentUserDetails(String email);
     void updateEmail(String currentEmail, String newEmail);
-
+    void deleteUser(String email);
 }

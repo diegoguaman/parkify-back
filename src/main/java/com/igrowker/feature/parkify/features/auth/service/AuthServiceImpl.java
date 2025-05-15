@@ -11,6 +11,8 @@ import com.igrowker.feature.parkify.features.auth.entities.Role;
 import com.igrowker.feature.parkify.features.auth.repository.AuthUserRepository;
 import com.igrowker.feature.parkify.features.auth.security.JwtService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -99,6 +102,16 @@ public class AuthServiceImpl implements AuthService {
 
         user.setEmail(newEmail);
         authUserRepository.save(user);
+    }
+
+    //delete user
+    @Override
+    @Transactional
+    public void deleteUser(String email) {
+        log.info("Deleting user with email: {}", email);
+        AuthUser user = authUserRepository.findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+        authUserRepository.delete(user);
     }
 
 }
