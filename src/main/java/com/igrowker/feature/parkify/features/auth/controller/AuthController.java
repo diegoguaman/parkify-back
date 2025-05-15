@@ -5,6 +5,7 @@ import com.igrowker.feature.parkify.exception.GlobalExceptionHandler;
 import com.igrowker.feature.parkify.features.auth.dto.request.LoginRequest;
 import com.igrowker.feature.parkify.features.auth.dto.request.RegisterRequest;
 import com.igrowker.feature.parkify.features.auth.dto.request.UpdateEmailRequest;
+import com.igrowker.feature.parkify.features.auth.dto.request.UpdateUserRequest;
 import com.igrowker.feature.parkify.features.auth.dto.response.LoginResponse;
 import com.igrowker.feature.parkify.features.auth.dto.response.RegisterResponse;
 import com.igrowker.feature.parkify.features.auth.dto.response.UserResponse;
@@ -191,12 +192,54 @@ public class AuthController {
                 content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                         schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class)))
     })
-    @DeleteMapping("/my")
+    @DeleteMapping("/me")
     public ResponseEntity<Void> deleteMyUser(Authentication authentication) {
         String userEmail  = authentication.getName();
         authService.deleteUser(userEmail);
         return ResponseEntity.noContent().build();
     }
 
-
+    //update User
+    @Operation(
+        summary = "Update user profile",
+        description = "Allows the authenticated user to fully update their profile: username, email, contact phone, location."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+                responseCode = "200",
+                description = "User updated successfully",
+                content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = UserResponse.class)
+                )
+        ),
+        @ApiResponse(
+                responseCode = "400",
+                description = "Invalid request data",
+                content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class)
+                )
+        ),
+        @ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized"
+        ),
+        @ApiResponse(
+                responseCode = "409",
+                description = "Email already in use",
+                content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class)
+                )
+        )
+    })
+    @PutMapping("/me")
+    public ResponseEntity<UserResponse> updateUser(
+        @AuthenticationPrincipal UserDetails userDetails,
+        @Valid @RequestBody UpdateUserRequest request
+    ) {
+        UserResponse updatedUser = authService.updateUser(userDetails.getUsername(), request);
+        return ResponseEntity.ok(updatedUser);
+    }
 }

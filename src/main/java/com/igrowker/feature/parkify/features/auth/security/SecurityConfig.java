@@ -62,7 +62,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 antMatcher(HttpMethod.GET, AUTH_PATH + "/me"),
                                 antMatcher(HttpMethod.PUT, USERS_PATH + "/me/location"),
-                                antMatcher(HttpMethod.DELETE, USERS_PATH + "/my"),
+                                antMatcher(HttpMethod.DELETE, USERS_PATH + "/me"),
+                                antMatcher(HttpMethod.PUT, AUTH_PATH + "/me"),
                                 antMatcher(HttpMethod.GET, RECOMMENDATIONS_PATH + "/zones"),
                                 antMatcher(HttpMethod.GET, RECOMMENDATIONS_PATH + "/parkings"),
                                 antMatcher(HttpMethod.PATCH, BOOKINGS_PATH + "/{bookingRequestId}"),
