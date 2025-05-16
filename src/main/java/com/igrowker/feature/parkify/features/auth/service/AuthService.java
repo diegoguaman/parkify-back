@@ -4,6 +4,7 @@ package com.igrowker.feature.parkify.features.auth.service;
 import com.igrowker.feature.parkify.features.auth.dto.request.LoginRequest;
 import com.igrowker.feature.parkify.features.auth.dto.request.RegisterRequest;
 import com.igrowker.feature.parkify.features.auth.dto.request.UpdateEmailRequest;
+import com.igrowker.feature.parkify.features.auth.dto.request.UpdateUserRequest;
 import com.igrowker.feature.parkify.features.auth.dto.response.LoginResponse;
 import com.igrowker.feature.parkify.features.auth.dto.response.RegisterResponse;
 import com.igrowker.feature.parkify.features.auth.dto.response.UserResponse;
@@ -13,5 +14,6 @@ public interface AuthService {
     RegisterResponse register(RegisterRequest request);
     UserResponse getCurrentUserDetails(String email);
     void updateEmail(String currentEmail, String newEmail);
-
+    void deleteUser(String email);
+    UserResponse updateUser(String currentEmail, UpdateUserRequest request);
 }

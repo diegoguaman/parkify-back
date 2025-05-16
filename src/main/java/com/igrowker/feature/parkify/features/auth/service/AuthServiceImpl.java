@@ -3,6 +3,7 @@ package com.igrowker.feature.parkify.features.auth.service;
 import com.igrowker.feature.parkify.exception.EmailAlreadyExistsException;
 import com.igrowker.feature.parkify.features.auth.dto.request.LoginRequest;
 import com.igrowker.feature.parkify.features.auth.dto.request.RegisterRequest;
+import com.igrowker.feature.parkify.features.auth.dto.request.UpdateUserRequest;
 import com.igrowker.feature.parkify.features.auth.dto.response.LoginResponse;
 import com.igrowker.feature.parkify.features.auth.dto.response.RegisterResponse;
 import com.igrowker.feature.parkify.features.auth.dto.response.UserResponse;
@@ -11,6 +12,8 @@ import com.igrowker.feature.parkify.features.auth.entities.Role;
 import com.igrowker.feature.parkify.features.auth.repository.AuthUserRepository;
 import com.igrowker.feature.parkify.features.auth.security.JwtService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -99,6 +103,51 @@ public class AuthServiceImpl implements AuthService {
 
         user.setEmail(newEmail);
         authUserRepository.save(user);
+    }
+
+    //delete user
+    @Override
+    @Transactional
+    public void deleteUser(String email) {
+        log.info("Deleting user with email: {}", email);
+        AuthUser user = authUserRepository.findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+        authUserRepository.delete(user);
+    }
+
+    //update user
+    @Override
+    @Transactional
+    public UserResponse updateUser(String currentEmail, UpdateUserRequest request) {
+        AuthUser user = authUserRepository.findByEmail(currentEmail)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        if (!currentEmail.equals(request.email()) &&
+            authUserRepository.findByEmail(request.email()).isPresent()) {
+            throw new EmailAlreadyExistsException("Email already in use");
+        }
+
+        user.setUsername(request.username());
+        user.setEmail(request.email());
+        user.setContactPhone(request.contactPhone());
+        if(request.latitude() != null) {
+            user.setLatitude(request.latitude());
+        }
+        if(request.longitude() != null){
+            user.setLongitude(request.longitude());
+        }
+
+        AuthUser saved = authUserRepository.save(user);
+
+        return UserResponse.builder()
+                .id(String.valueOf(saved.getId()))
+                .username(saved.getUsername())
+                .email(saved.getEmail())
+                .role(saved.getRole().name())
+                .contactPhone(saved.getContactPhone())
+                .createdAt(saved.getCreatedAt())
+                .updatedAt(saved.getUpdatedAt())
+                .build();
     }
 
 }

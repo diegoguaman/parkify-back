@@ -5,6 +5,7 @@ import com.igrowker.feature.parkify.exception.GlobalExceptionHandler;
 import com.igrowker.feature.parkify.features.auth.dto.request.LoginRequest;
 import com.igrowker.feature.parkify.features.auth.dto.request.RegisterRequest;
 import com.igrowker.feature.parkify.features.auth.dto.request.UpdateEmailRequest;
+import com.igrowker.feature.parkify.features.auth.dto.request.UpdateUserRequest;
 import com.igrowker.feature.parkify.features.auth.dto.response.LoginResponse;
 import com.igrowker.feature.parkify.features.auth.dto.response.RegisterResponse;
 import com.igrowker.feature.parkify.features.auth.dto.response.UserResponse;
@@ -22,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -178,4 +180,66 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
+    //delete User
+    @Operation(
+        summary = "Delete User",
+        description = "Allows the authenticated user (OWNER or DRIVER) to delete their own account."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "User deleted successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "404", description = "User not found",
+                content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                        schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class)))
+    })
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> deleteMyUser(Authentication authentication) {
+        String userEmail  = authentication.getName();
+        authService.deleteUser(userEmail);
+        return ResponseEntity.noContent().build();
+    }
+
+    //update User
+    @Operation(
+        summary = "Update user profile",
+        description = "Allows the authenticated user to fully update their profile: username, email, contact phone, location."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+                responseCode = "200",
+                description = "User updated successfully",
+                content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = UserResponse.class)
+                )
+        ),
+        @ApiResponse(
+                responseCode = "400",
+                description = "Invalid request data",
+                content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class)
+                )
+        ),
+        @ApiResponse(
+                responseCode = "401",
+                description = "Unauthorized"
+        ),
+        @ApiResponse(
+                responseCode = "409",
+                description = "Email already in use",
+                content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = GlobalExceptionHandler.ErrorResponse.class)
+                )
+        )
+    })
+    @PutMapping("/me")
+    public ResponseEntity<UserResponse> updateUser(
+        @AuthenticationPrincipal UserDetails userDetails,
+        @Valid @RequestBody UpdateUserRequest request
+    ) {
+        UserResponse updatedUser = authService.updateUser(userDetails.getUsername(), request);
+        return ResponseEntity.ok(updatedUser);
+    }
 }
