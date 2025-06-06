@@ -3,13 +3,15 @@ package com.igrowker.feature.parkify.features.parkingV2.dto.response;
 import java.util.List;
 import java.util.UUID;
 
+import com.igrowker.feature.parkify.features.parkingV2.entities.AccessType;
+
 import lombok.Data;
 
 @Data
 public class ParkingResponseDTO {
 
     private UUID id;
-    private UUID ownerId;
+    private Long ownerId;
     private String parkingName;
     private String parkingAddress;
     private String parkingPhone;
@@ -21,6 +23,8 @@ public class ParkingResponseDTO {
     private Integer ratingCount;
     private Double lat;
     private Double lng;
+    private AccessType accessType;
+    private String accessInstructions;
     private List<TurnoResponseDTO> turnos;
 
 }

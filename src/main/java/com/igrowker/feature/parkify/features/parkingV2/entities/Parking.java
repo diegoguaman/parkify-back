@@ -5,20 +5,23 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import com.igrowker.feature.parkify.features.auth.entities.AuthUser;
+
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-@Entity
+@Entity(name = "ParkingV2")
 @Table(name = "parking_v2")
 public class Parking {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Column(nullable = false)
-    private UUID ownerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private AuthUser owner;
 
     @Column(nullable = false)
     private String parkingName;
@@ -52,6 +55,13 @@ public class Parking {
 
     @Column(nullable = false)
     private Double lng;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "access_type")
+    private AccessType accessType;
+
+    @Column(name = "access_instructions")
+    private String accessInstructions;
 
     @OneToMany(mappedBy = "parking", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Turno> turnos;

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import com.igrowker.feature.parkify.features.parkingV2.dto.request.TurnoRequestDTO;
@@ -22,7 +23,7 @@ public class TurnoServiceImpl implements TurnoService {
     private final ParkingRepository parkingRepository;
     private final TurnoValidator turnoValidator;
 
-    public TurnoServiceImpl(TurnoRepository turnoRepository, ParkingRepository parkingRepository, TurnoValidator turnoValidator) {
+    public TurnoServiceImpl(TurnoRepository turnoRepository, @Qualifier("parkingRepositoryV2")ParkingRepository parkingRepository, TurnoValidator turnoValidator) {
         this.turnoRepository = turnoRepository;
         this.parkingRepository = parkingRepository;
         this.turnoValidator = turnoValidator;

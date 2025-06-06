@@ -13,7 +13,6 @@ public class ParkingMapper {
 
     public Parking toEntity(ParkingRequestDTO dto) {
         Parking p = new Parking();
-        p.setOwnerId(dto.getOwnerId());
         p.setParkingName(dto.getParkingName());
         p.setParkingAddress(dto.getParkingAddress());
         p.setParkingPhone(dto.getParkingPhone());
@@ -23,13 +22,14 @@ public class ParkingMapper {
         p.setExtraFeatures(dto.getExtraFeatures());
         p.setLat(dto.getLat());
         p.setLng(dto.getLng());
+        p.setAccessType(dto.getAccessType());
+        p.setAccessInstructions(dto.getAccessInstructions());
         return p;
     }
 
     public ParkingResponseDTO toDto(Parking parking) {
         ParkingResponseDTO dto = new ParkingResponseDTO();
         dto.setId(parking.getId());
-        dto.setOwnerId(parking.getOwnerId());
         dto.setParkingName(parking.getParkingName());
         dto.setParkingAddress(parking.getParkingAddress());
         dto.setParkingPhone(parking.getParkingPhone());
@@ -41,7 +41,11 @@ public class ParkingMapper {
         dto.setRatingCount(parking.getRatingCount());
         dto.setLat(parking.getLat());
         dto.setLng(parking.getLng());
-
+        dto.setAccessType(parking.getAccessType());
+        dto.setAccessInstructions(parking.getAccessInstructions());
+        if (parking.getOwner() != null) {
+            dto.setOwnerId(parking.getOwner().getId());
+        }
         if (parking.getTurnos() != null) {
             dto.setTurnos(parking.getTurnos().stream()
                     .map(this::mapTurnoToDto)
@@ -61,6 +65,8 @@ public class ParkingMapper {
         p.setExtraFeatures(dto.getExtraFeatures());
         p.setLat(dto.getLat());
         p.setLng(dto.getLng());
+        p.setAccessType(dto.getAccessType());
+        p.setAccessInstructions(dto.getAccessInstructions());
     }
 
     private TurnoResponseDTO mapTurnoToDto(Turno t) {
