@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import com.igrowker.feature.parkify.features.parkingV2.dto.request.ParkingRequestDTO;
-import com.igrowker.feature.parkify.features.parkingV2.entities.AccessType;
 import com.igrowker.feature.parkify.features.parkingV2.entities.Parking;
 import com.igrowker.feature.parkify.features.parkingV2.repository.ParkingRepository;
 
@@ -33,19 +32,7 @@ public class ParkingValidator {
         List<String> errors = new ArrayList<>();
 
         if (dto.getAvailableSpots() > dto.getTotalSpots()) {
-            errors.add("availableSpots no puede ser mayor a totalSpots");
-        }
-
-        if (dto.getLat() == null) {
-            errors.add("La latitud es obligatoria");
-        } else if (dto.getLat() < -90 || dto.getLat() > 90) {
-            errors.add("Latitud fuera de rango (-90 a 90)");
-        }
-
-        if (dto.getLng() == null) {
-            errors.add("La longitud es obligatoria");
-        } else if (dto.getLng() < -180 || dto.getLng() > 180) {
-            errors.add("Longitud fuera de rango (-180 a 180)");
+            errors.add("availableSpots cannot be greater than totalSpots");
         }
 
         if (dto.getParkingName() != null && dto.getParkingAddress() != null) {
@@ -54,7 +41,7 @@ public class ParkingValidator {
                     : parkingRepository.existsByParkingNameAndParkingAddressAndOwnerIdAndIdNot(dto.getParkingName(), dto.getParkingAddress(), ownerId, excludeId);
 
             if (existsSameNameAddressOwner) {
-                errors.add("Ya tenés un parking con ese nombre y dirección");
+                errors.add("You already have a parking with that name and address");
             }
         }
 
@@ -69,7 +56,7 @@ public class ParkingValidator {
                         : parkingRepository.existsByLatAndLngAndIdNot(dto.getLat(), dto.getLng(), excludeId);
 
                 if (existsSameLocation) {
-                    errors.add("Ya existe un parking registrado en estas coordenadas");
+                    errors.add("A parking already exists at these coordinates");
                 }
             }
         }
@@ -79,11 +66,11 @@ public class ParkingValidator {
         boolean hasAccessType = dto.getAccessType() != null;
 
         if (hasAccessInstructions && !hasAccessType) {
-            errors.add("Si se proporcionan instrucciones de acceso, también se debe especificar el tipo de acceso (accessType)");
+            errors.add("If accessInstructions are provided, accessType must also be specified");
         }
 
         if (hasAccessType && !hasAccessInstructions) {
-            errors.add("Si se especifica un tipo de acceso, también se deben proporcionar las instrucciones de acceso (accessInstructions)");
+            errors.add("If accessType is specified, accessInstructions must also be provided");
         }
 
         return errors;

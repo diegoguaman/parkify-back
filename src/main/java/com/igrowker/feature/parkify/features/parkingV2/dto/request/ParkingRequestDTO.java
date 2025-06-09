@@ -5,59 +5,65 @@ import java.util.List;
 import com.igrowker.feature.parkify.features.parkingV2.entities.AccessType;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 @Data
 public class ParkingRequestDTO {
 
-    @Schema(description = "Nombre del parking", example = "Parking Palermo", required = true)
+    @Schema(description = "Name of the parking lot", example = "Parking Palermo", required = true)
     @NotBlank(message = "El nombre del parking es obligatorio")
     private String parkingName;
 
-    @Schema(description = "Dirección del parking", example = "Av. Libertador 1234", required = true)
+    @Schema(description = "Address of the parking lot", example = "Av. Libertador 1234", required = true)
     @NotBlank(message = "La dirección del parking es obligatoria")
     private String parkingAddress;
 
-    @Schema(description = "Teléfono de contacto del parking", example = "1134567890", required = true)
+    @Schema(description = "Contact phone number of the parking lot", example = "1134567890", required = true)
     @NotBlank(message = "El teléfono del parking es obligatorio")
     private String parkingPhone;
 
-    @Schema(description = "URL de imagen representativa", example = "https://example.com/image.jpg")
+    @Schema(description = "URL of a representative image", example = "https://example.com/image.jpg")
     private String imageUrl;
 
-    @Schema(description = "Total de espacios disponibles en el parking", example = "20", required = true)
+    @Schema(description = "Total number of spots in the parking lot", example = "20", required = true)
     @NotNull(message = "El número total de espacios es obligatorio")
     private Integer totalSpots;
 
-    @Schema(description = "Cantidad de espacios actualmente disponibles", example = "15", required = true)
+    @Schema(description = "Number of currently available spots", example = "15", required = true)
     @NotNull(message = "El número de espacios disponibles es obligatorio")
     private Integer availableSpots;
 
-    @Schema(description = "Lista de características adicionales", example = "[\"techado\", \"vigilancia 24hs\"]")
+    @Schema(description = "List of additional features", example = "[\"covered\", \"24h surveillance\"]")
     private List<String> extraFeatures;
 
-    @Schema(description = "Promedio de calificaciones", example = "4.5")
+    @Schema(description = "Average rating", example = "4.5")
     private Double ratingAvg;
 
-    @Schema(description = "Cantidad de calificaciones recibidas", example = "25")
+    @Schema(description = "Number of ratings received", example = "25")
     private Integer ratingCount;
 
-    @Schema(description = "Latitud de la ubicación", example = "-34.6037", required = true)
+    @Schema(description = "Latitude of the location", example = "-34.6037", required = true)
+    @DecimalMin(value = "-90.0", message = "Latitude must be greater than or equal to -90")
+    @DecimalMax(value = "90.0", message = "Latitude must be less than or equal to 90")
     @NotNull(message = "La latitud es obligatoria")
     private Double lat;
 
-    @Schema(description = "Longitud de la ubicación", example = "-58.3816", required = true)
+    @Schema(description = "Longitude of the location", example = "-58.3816", required = true)
+    @DecimalMin(value = "-180.0", message = "Longitude must be greater than or equal to -180")
+    @DecimalMax(value = "180.0", message = "Longitude must be less than or equal to 180")
     @NotNull(message = "La longitud es obligatoria")
     private Double lng;
 
     @Schema(
-        description = "Tipo de acceso al parking",
+        description = "Access type for the parking lot",
         example = "QR_CODE",
         allowableValues = {"QR_CODE", "PIN_CODE", "MANUAL_CONTACT", "OTHER"}
     )
     private AccessType accessType;
 
-    @Schema(description = "Instrucciones adicionales de acceso al parking", example = "Llamar al portero al llegar")
+    @Schema(description = "Additional access instructions", example = "Call the intercom upon arrival")
     private String accessInstructions;
 }

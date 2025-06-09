@@ -10,7 +10,7 @@ public class AuthUserProvider {
         if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails customUserDetails) {
             return customUserDetails.getId();
         }
-        throw new RuntimeException("Usuario no autenticado");
+        throw new RuntimeException("User not authenticated");
     }
 
     public static String getAuthenticatedUserRole() {
@@ -18,6 +18,6 @@ public class AuthUserProvider {
         if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails customUserDetails) {
             return customUserDetails.getRole();
         }
-        throw new RuntimeException("Usuario no autenticado");
+        throw new RuntimeException("User not authenticated");
     }
 }

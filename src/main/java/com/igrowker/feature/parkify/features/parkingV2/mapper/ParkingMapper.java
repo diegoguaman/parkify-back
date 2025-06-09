@@ -4,55 +4,50 @@ import org.springframework.stereotype.Component;
 
 import com.igrowker.feature.parkify.features.parkingV2.dto.request.ParkingRequestDTO;
 import com.igrowker.feature.parkify.features.parkingV2.dto.response.ParkingResponseDTO;
-import com.igrowker.feature.parkify.features.parkingV2.dto.response.TurnoResponseDTO;
+import com.igrowker.feature.parkify.features.parkingV2.dto.response.ShiftResponseDTO;
 import com.igrowker.feature.parkify.features.parkingV2.entities.Parking;
-import com.igrowker.feature.parkify.features.parkingV2.entities.Turno;
+import com.igrowker.feature.parkify.features.parkingV2.entities.Shift;
 
 @Component
 public class ParkingMapper {
 
     public Parking toEntity(ParkingRequestDTO dto) {
-        Parking p = new Parking();
-        p.setParkingName(dto.getParkingName());
-        p.setParkingAddress(dto.getParkingAddress());
-        p.setParkingPhone(dto.getParkingPhone());
-        p.setImageUrl(dto.getImageUrl());
-        p.setTotalSpots(dto.getTotalSpots());
-        p.setAvailableSpots(dto.getAvailableSpots());
-        p.setExtraFeatures(dto.getExtraFeatures());
-        p.setLat(dto.getLat());
-        p.setLng(dto.getLng());
-        p.setAccessType(dto.getAccessType());
-        p.setAccessInstructions(dto.getAccessInstructions());
-        return p;
+        return Parking.builder()
+                .parkingName(dto.getParkingName())
+                .parkingAddress(dto.getParkingAddress())
+                .parkingPhone(dto.getParkingPhone())
+                .imageUrl(dto.getImageUrl())
+                .totalSpots(dto.getTotalSpots())
+                .availableSpots(dto.getAvailableSpots())
+                .extraFeatures(dto.getExtraFeatures())
+                .lat(dto.getLat())
+                .lng(dto.getLng())
+                .accessType(dto.getAccessType())
+                .accessInstructions(dto.getAccessInstructions())
+                .build();
     }
 
     public ParkingResponseDTO toDto(Parking parking) {
-        ParkingResponseDTO dto = new ParkingResponseDTO();
-        dto.setId(parking.getId());
-        dto.setParkingName(parking.getParkingName());
-        dto.setParkingAddress(parking.getParkingAddress());
-        dto.setParkingPhone(parking.getParkingPhone());
-        dto.setImageUrl(parking.getImageUrl());
-        dto.setTotalSpots(parking.getTotalSpots());
-        dto.setAvailableSpots(parking.getAvailableSpots());
-        dto.setExtraFeatures(parking.getExtraFeatures());
-        dto.setRatingAvg(parking.getRatingAvg());
-        dto.setRatingCount(parking.getRatingCount());
-        dto.setLat(parking.getLat());
-        dto.setLng(parking.getLng());
-        dto.setAccessType(parking.getAccessType());
-        dto.setAccessInstructions(parking.getAccessInstructions());
-        if (parking.getOwner() != null) {
-            dto.setOwnerId(parking.getOwner().getId());
-        }
-        if (parking.getTurnos() != null) {
-            dto.setTurnos(parking.getTurnos().stream()
-                    .map(this::mapTurnoToDto)
-                    .toList());
-        }
-
-        return dto;
+        return new ParkingResponseDTO(
+                parking.getId(),
+                parking.getOwner() != null ? parking.getOwner().getId() : null,
+                parking.getParkingName(),
+                parking.getParkingAddress(),
+                parking.getParkingPhone(),
+                parking.getImageUrl(),
+                parking.getTotalSpots(),
+                parking.getAvailableSpots(),
+                parking.getExtraFeatures(),
+                parking.getRatingAvg(),
+                parking.getRatingCount(),
+                parking.getLat(),
+                parking.getLng(),
+                parking.getAccessType(),
+                parking.getAccessInstructions(),
+                parking.getShifts() != null
+                        ? parking.getShifts().stream().map(this::mapShiftToDto).toList()
+                        : null
+        );
     }
 
     public void updateEntityFromDto(ParkingRequestDTO dto, Parking p) {
@@ -69,15 +64,16 @@ public class ParkingMapper {
         p.setAccessInstructions(dto.getAccessInstructions());
     }
 
-    private TurnoResponseDTO mapTurnoToDto(Turno t) {
-        TurnoResponseDTO dto = new TurnoResponseDTO();
-        dto.setId(t.getId());
-        dto.setNombre(t.getNombre());
-        dto.setHoraInicio(t.getHoraInicio());
-        dto.setHoraFin(t.getHoraFin());
-        dto.setPrecioPorHora(t.getPrecioPorHora());
-        dto.setTipoRecurrencia(t.getTipoRecurrencia());
-        dto.setDiasEspecificos(t.getDiasEspecificos());
-        return dto;
+    private ShiftResponseDTO mapShiftToDto(Shift t) {
+         return new ShiftResponseDTO(
+                t.getId(),
+                t.getName(),
+                t.getStartTime(),
+                t.getEndTime(),
+                t.getPricePerHour(),
+                t.getRecurrenceType(),
+                t.getSpecificDays(),
+                t.isOvernight()
+        );
     }
 }

@@ -20,7 +20,7 @@ import java.util.UUID;
 
 @RestController("parkingV2Controller")
 @RequestMapping("/api/v2/parkings")
-@Tag(name = "Parking V2", description = "CRUD para parkings con turnos y tarifas dinámicas")
+@Tag(name = "Parking V2", description = "CRUD for parkings with shifts and dynamic pricing")
 @SecurityRequirement(name = "bearerAuth")
 public class ParkingController {
 
@@ -30,69 +30,69 @@ public class ParkingController {
         this.parkingService = parkingService;
     }
 
-    @Operation(summary = "Obtener todos los parkings disponibles")
-    @ApiResponse(responseCode = "200", description = "Lista de parkings obtenida correctamente")
+    @Operation(summary = "Get all available parkings")
+    @ApiResponse(responseCode = "200", description = "List of parkings retrieved successfully")
     @GetMapping
     public List<ParkingResponseDTO> getAll() {
         return parkingService.getAll();
     }
 
-    @Operation(summary = "Obtener un parking por su ID")
+    @Operation(summary = "Get a parking by its ID")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Parking encontrado"),
-        @ApiResponse(responseCode = "404", description = "Parking no encontrado"),
-        @ApiResponse(responseCode = "403", description = "Acceso denegado")
+        @ApiResponse(responseCode = "200", description = "Parking found"),
+        @ApiResponse(responseCode = "404", description = "Parking not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied")
     })
     @GetMapping("/{id}")
     public ParkingResponseDTO getById(
-            @Parameter(description = "ID del parking", required = true) @PathVariable UUID id
+            @Parameter(description = "Parking ID", required = true) @PathVariable UUID id
     ) {
         return parkingService.getById(id);
     }
 
-    @Operation(summary = "Crear un nuevo parking")
+    @Operation(summary = "Create a new parking")
     @ApiResponses({
-        @ApiResponse(responseCode = "201", description = "Parking creado exitosamente"),
-        @ApiResponse(responseCode = "400", description = "Datos inválidos o faltantes"),
-        @ApiResponse(responseCode = "403", description = "Acceso denegado")
+        @ApiResponse(responseCode = "201", description = "Parking successfully created"),
+        @ApiResponse(responseCode = "400", description = "Invalid or missing data"),
+        @ApiResponse(responseCode = "403", description = "Access denied")
     })
     @PostMapping
     @PreAuthorize("hasRole('OWNER')")
     public ParkingResponseDTO create(
-            @Parameter(description = "Datos del nuevo parking", required = true)
+            @Parameter(description = "New parking data", required = true)
             @Valid @RequestBody ParkingRequestDTO dto
     ) {
         return parkingService.create(dto);
     }
 
-    @Operation(summary = "Actualizar un parking existente")
+    @Operation(summary = "Update an existing parking")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Parking actualizado correctamente"),
-        @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-        @ApiResponse(responseCode = "404", description = "Parking no encontrado"),
-        @ApiResponse(responseCode = "403", description = "Acceso denegado")
+        @ApiResponse(responseCode = "200", description = "Parking successfully updated"),
+        @ApiResponse(responseCode = "400", description = "Invalid data"),
+        @ApiResponse(responseCode = "404", description = "Parking not found"),
+        @ApiResponse(responseCode = "403", description = "Access denied")
     })
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('OWNER')")
     public ParkingResponseDTO update(
-            @Parameter(description = "ID del parking a actualizar", required = true)
+            @Parameter(description = "ID of the parking to update", required = true)
             @PathVariable UUID id,
-            @Parameter(description = "Nuevos datos del parking", required = true)
+            @Parameter(description = "New parking data", required = true)
             @Valid @RequestBody ParkingRequestDTO dto
     ) {
         return parkingService.update(id, dto);
     }
 
-    @Operation(summary = "Eliminar un parking")
+    @Operation(summary = "Delete a parking")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ApiResponses({
-        @ApiResponse(responseCode = "204", description = "Parking eliminado correctamente"),
-        @ApiResponse(responseCode = "404", description = "Parking no encontrado")
+        @ApiResponse(responseCode = "204", description = "Parking successfully deleted"),
+        @ApiResponse(responseCode = "404", description = "Parking not found")
     })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('OWNER')")
     public void delete(
-            @Parameter(description = "ID del parking a eliminar", required = true)
+            @Parameter(description = "ID of the parking to delete", required = true)
             @PathVariable UUID id
     ) {
         parkingService.delete(id);

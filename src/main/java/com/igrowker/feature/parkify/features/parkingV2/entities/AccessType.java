@@ -18,7 +18,7 @@ public enum AccessType {
             }
         }
         throw new IllegalArgumentException(
-            "Valor inválido para AccessType: '" + value +
-            "'. Los valores válidos son: " + Arrays.toString(values()));
+            "Invalid value for AccessType: '" + value +
+            "'. Valid values are: " + Arrays.toString(values()));
     }
 }

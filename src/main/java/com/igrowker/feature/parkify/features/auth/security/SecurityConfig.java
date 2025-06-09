@@ -1,6 +1,5 @@
 package com.igrowker.feature.parkify.features.auth.security;
 
-import com.igrowker.feature.parkify.exception.CustomAccessDeniedHandler;
 import com.igrowker.feature.parkify.exception.CustomAuthenticationEntryPoint;
 import com.igrowker.feature.parkify.features.auth.entities.Role;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +8,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -43,7 +41,6 @@ public class SecurityConfig {
     private static final String RECOMMENDATIONS_PATH = API_BASE_PATH_V1 + "/recommendations";
     private static final String OPERATIONS_PATH = API_BASE_PATH_V1 + "/operations";
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
-    private final CustomAccessDeniedHandler accessDeniedHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -52,7 +49,6 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 antMatcher(HttpMethod.POST, PARKINGS_PATH + "/my"),
-                                antMatcher(HttpMethod.GET, PARKINGS_PATH + "/my"),
                                 antMatcher(HttpMethod.GET, PARKINGS_PATH + "/my"),
                                 antMatcher(HttpMethod.PUT, PARKINGS_PATH + "/{parkingId}"),
                                 antMatcher(HttpMethod.GET, PARKINGS_PATH + "/my-list"),
@@ -92,14 +88,18 @@ public class SecurityConfig {
                                 antMatcher("/swagger-ui/**"),
                                 antMatcher("/swagger-ui.html")
                         ).permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v2/parkings").hasRole("OWNER")
-                        .requestMatchers(HttpMethod.GET, "/api/v2/parkings/my").hasRole("OWNER")
-                        .requestMatchers(HttpMethod.PUT, "/api/v2/parkings/{id}").hasRole("OWNER")
-                        .requestMatchers(HttpMethod.DELETE, "/api/v2/parkings/{id}").hasRole("OWNER")
-                        .requestMatchers(HttpMethod.GET, "/api/v2/parkings").hasAnyRole("DRIVER", "OWNER")
-                        .requestMatchers(HttpMethod.GET, "/api/v2/parkings/{id}").authenticated()
-                        .requestMatchers("/api/v2/turnos/**").hasRole("OWNER")
-                        .anyRequest().authenticated()
+                        .requestMatchers(
+                                antMatcher(HttpMethod.POST, "/api/v2/parkings"),
+                                antMatcher(HttpMethod.GET, "/api/v2/parkings/my"),
+                                antMatcher(HttpMethod.PUT, "/api/v2/parkings/{id}"),
+                                antMatcher(HttpMethod.DELETE, "/api/v2/parkings/{id}")
+                        ).hasRole("OWNER")
+                        
+                        .requestMatchers(
+                                antMatcher(HttpMethod.GET, "/api/v2/parkings"),
+                                antMatcher(HttpMethod.GET, "/api/v2/parkings/{id}")
+                        ).hasAnyRole("DRIVER", "OWNER")
+                        .requestMatchers("/api/v2/parkings/*/shifts/**").hasRole("OWNER")
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -108,7 +108,6 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(authenticationEntryPoint)
-                        .accessDeniedHandler(accessDeniedHandler)
                 );
         return http.build();
     }

@@ -2,16 +2,23 @@ package com.igrowker.feature.parkify.features.parkingV2.entities;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import com.igrowker.feature.parkify.features.auth.entities.AuthUser;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity(name = "ParkingV2")
 @Table(name = "parking_v2")
 public class Parking {
@@ -41,8 +48,9 @@ public class Parking {
     @Column(nullable = false)
     private int availableSpots;
 
+    @Builder.Default
     @ElementCollection
-    private List<String> extraFeatures;
+    private List<String> extraFeatures = new ArrayList<>();
 
     @Column(nullable = true)
     private Double ratingAvg;
@@ -63,8 +71,9 @@ public class Parking {
     @Column(name = "access_instructions")
     private String accessInstructions;
 
+    @Builder.Default
     @OneToMany(mappedBy = "parking", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Turno> turnos;
+    private List<Shift> shifts = new ArrayList<>();
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

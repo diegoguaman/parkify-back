@@ -2,15 +2,12 @@ package com.igrowker.feature.parkify.features.parkingV2.service;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.security.core.Authentication;
 
 import com.igrowker.feature.parkify.features.auth.entities.AuthUser;
 import com.igrowker.feature.parkify.features.auth.repository.AuthUserRepository;
 import com.igrowker.feature.parkify.features.auth.security.AuthUserProvider;
-import com.igrowker.feature.parkify.features.auth.security.CustomUserDetails;
 import com.igrowker.feature.parkify.features.parkingV2.dto.request.ParkingRequestDTO;
 import com.igrowker.feature.parkify.features.parkingV2.dto.response.ParkingResponseDTO;
 import com.igrowker.feature.parkify.features.parkingV2.entities.Parking;
@@ -19,7 +16,6 @@ import com.igrowker.feature.parkify.features.parkingV2.repository.ParkingReposit
 import com.igrowker.feature.parkify.features.parkingV2.validator.ParkingValidator;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service("parkingV2ServiceImpl")
@@ -70,14 +66,8 @@ public class ParkingServiceImpl implements ParkingService {
 
     @Override
     public ParkingResponseDTO update(UUID id, ParkingRequestDTO request) {
-        Long ownerId = AuthUserProvider.getAuthenticatedUserId();
-        Parking existing = parkingRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Parking not found"));
-        
-        if (!existing.getOwner().getId().equals(ownerId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permiso para modificar este parking");
-        }
-        List<String> errors = parkingValidator.validateForUpdate(request, existing, ownerId);
+        Parking existing = findParkingAndVerifyOwnership(id);
+        List<String> errors = parkingValidator.validateForUpdate(request, existing, AuthUserProvider.getAuthenticatedUserId());
         if (!errors.isEmpty()) {
             throw new IllegalArgumentException(String.join("; ", errors));
         }
@@ -88,16 +78,26 @@ public class ParkingServiceImpl implements ParkingService {
 
     @Override
     public void delete(UUID id) {
-        Parking parking = parkingRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "El parking no existe"));
-
-        Long userId = AuthUserProvider.getAuthenticatedUserId(); 
-        if (!parking.getOwner().getId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permiso para eliminar este parking");
-        }
-
+        Parking parking = findParkingAndVerifyOwnership(id);
         parkingRepository.delete(parking);
     }
+    private Parking findParkingAndVerifyOwnership(UUID parkingId) {
+        Long currentUserId = AuthUserProvider.getAuthenticatedUserId();
 
+        return parkingRepository.findById(parkingId)
+            .map(parking -> {
+                if (!parking.getOwner().getId().equals(currentUserId)) {
+                    throw new ResponseStatusException(
+                        HttpStatus.FORBIDDEN,
+                        "You do not have permission to operate on parking with ID: " + parkingId
+                    );
+                }
+                return parking;
+            })
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Parking with ID: " + parkingId + " does not exist."
+            ));
+    }
     
 }
