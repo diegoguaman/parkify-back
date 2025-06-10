@@ -2,6 +2,8 @@ package com.igrowker.feature.parkify.features.auth.service;
 
 import com.igrowker.feature.parkify.features.auth.entities.AuthUser;
 import com.igrowker.feature.parkify.features.auth.repository.AuthUserRepository;
+import com.igrowker.feature.parkify.features.auth.security.CustomUserDetails;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,10 +22,11 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         final AuthUser authUser = authUserRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("AuthUser not found with email: " + email));
-        return new org.springframework.security.core.userdetails.User(
-                authUser.getEmail(),
-                authUser.getPassword(),
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + authUser.getRole().name()))
-        );
+        // return new org.springframework.security.core.userdetails.User(
+        //         authUser.getEmail(),
+        //         authUser.getPassword(),
+        //         Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + authUser.getRole().name()))
+        // );
+        return new CustomUserDetails(authUser);
     }
 }
