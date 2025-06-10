@@ -34,9 +34,9 @@ public class TurnoController {
 
     @PutMapping("/{turnoId}")
     public ResponseEntity<TurnoResponseDTO> update(
-            @PathVariable UUID id,
+            @PathVariable UUID turnoId,
             @RequestBody TurnoRequestDTO dto) {
-        TurnoResponseDTO updated = turnoService.update(id, dto);
+        TurnoResponseDTO updated = turnoService.update(turnoId, dto);
         return ResponseEntity.ok(updated);
     }
 
