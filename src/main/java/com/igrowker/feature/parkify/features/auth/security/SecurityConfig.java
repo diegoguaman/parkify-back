@@ -1,7 +1,5 @@
 package com.igrowker.feature.parkify.features.auth.security;
 
-import com.igrowker.feature.parkify.exception.CustomAccessDeniedHandler;
-import com.igrowker.feature.parkify.exception.CustomAuthenticationEntryPoint;
 import com.igrowker.feature.parkify.features.auth.entities.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -9,8 +7,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -25,7 +21,6 @@ import static org.springframework.security.web.util.matcher.AntPathRequestMatche
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -42,8 +37,6 @@ public class SecurityConfig {
     private static final String BOOKINGS_PATH = API_BASE_PATH_V1 + "/bookings";
     private static final String RECOMMENDATIONS_PATH = API_BASE_PATH_V1 + "/recommendations";
     private static final String OPERATIONS_PATH = API_BASE_PATH_V1 + "/operations";
-    private final CustomAuthenticationEntryPoint authenticationEntryPoint;
-    private final CustomAccessDeniedHandler accessDeniedHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -92,24 +85,14 @@ public class SecurityConfig {
                                 antMatcher("/swagger-ui/**"),
                                 antMatcher("/swagger-ui.html")
                         ).permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v2/parkings").hasRole("OWNER")
-                        .requestMatchers(HttpMethod.GET, "/api/v2/parkings/my").hasRole("OWNER")
-                        .requestMatchers(HttpMethod.PUT, "/api/v2/parkings/{id}").hasRole("OWNER")
-                        .requestMatchers(HttpMethod.DELETE, "/api/v2/parkings/{id}").hasRole("OWNER")
-                        .requestMatchers(HttpMethod.GET, "/api/v2/parkings").hasAnyRole("DRIVER", "OWNER")
-                        .requestMatchers(HttpMethod.GET, "/api/v2/parkings/{id}").authenticated()
-                        .requestMatchers("/api/v2/turnos/**").hasRole("OWNER")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .userDetailsService(userDetailsService)
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(authenticationEntryPoint)
-                        .accessDeniedHandler(accessDeniedHandler)
-                );
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 

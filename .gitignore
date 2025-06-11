@@ -47,5 +47,3 @@ docker-compose.override.yml
 ### Maven ###
 .mvn/
 target/
-
-/postgres_data/
