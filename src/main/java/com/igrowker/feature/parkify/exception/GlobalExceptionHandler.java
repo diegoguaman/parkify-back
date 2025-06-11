@@ -6,7 +6,6 @@ import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
@@ -15,13 +14,8 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import org.springframework.web.server.ResponseStatusException;
-
-import com.igrowker.feature.parkify.features.parkingV2.entities.AccessType;
 
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -248,65 +242,4 @@ public class GlobalExceptionHandler {
             this(timestamp, status, error, message, path, null);
         }
     }
-        //excepcion para enums
-        @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-        public ResponseEntity<GlobalExceptionHandler.ErrorResponse> handleEnumTypeMismatch(
-                MethodArgumentTypeMismatchException ex, HttpServletRequest request
-        ) {
-        if (ex.getRequiredType() != null && ex.getRequiredType().isEnum()) {
-                String enumName = ex.getRequiredType().getSimpleName();
-                String validValues = Arrays.toString(ex.getRequiredType().getEnumConstants());
-                String message = String.format("Valor inválido para el enum '%s'. Valores válidos: %s", enumName, validValues);
-
-                log.warn("Enum conversion failed for request [{}]: {}", request.getRequestURI(), message);
-
-                ErrorResponse errorResponse = new ErrorResponse(
-                        Instant.now(),
-                        HttpStatus.BAD_REQUEST.value(),
-                        HttpStatus.BAD_REQUEST.getReasonPhrase(),
-                        message,
-                        request.getRequestURI()
-                );
-                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-        }
-
-                // fallback genérico si no es enum
-                ErrorResponse errorResponse = new ErrorResponse(
-                        Instant.now(),
-                        HttpStatus.BAD_REQUEST.value(),
-                        HttpStatus.BAD_REQUEST.getReasonPhrase(),
-                        "Error en tipo de argumento.",
-                        request.getRequestURI()
-                );
-                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-        }
-        @ExceptionHandler(HttpMessageNotReadableException.class)
-        public ResponseEntity<ErrorResponse> handleEnumDeserializationError(
-                HttpMessageNotReadableException ex, HttpServletRequest request) {
-
-                Throwable cause = ex.getMostSpecificCause();
-                String message = "El formato del cuerpo de la solicitud es inválido.";
-
-                if (cause instanceof IllegalArgumentException && ex.getMessage() != null && ex.getMessage().contains("AccessType")) {
-                        String validValues = Arrays.stream(AccessType.values())
-                                .map(Enum::name)
-                                .collect(Collectors.joining(", "));
-                        message = "Valor inválido para el campo 'accessType'. Valores válidos: " + validValues + ".";
-                }
-
-                ErrorResponse errorResponse = new ErrorResponse(
-                        Instant.now(),
-                        HttpStatus.BAD_REQUEST.value(),
-                        HttpStatus.BAD_REQUEST.getReasonPhrase(),
-                        message,
-                        request.getRequestURI()
-                );
-                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-        }
-        @ExceptionHandler(ResponseStatusException.class)
-        public ResponseEntity<Object> handleResponseStatusException(ResponseStatusException ex) {
-        return ResponseEntity
-                .status(ex.getStatusCode())
-                .body(Map.of("error", ex.getReason()));
-        }
 }
