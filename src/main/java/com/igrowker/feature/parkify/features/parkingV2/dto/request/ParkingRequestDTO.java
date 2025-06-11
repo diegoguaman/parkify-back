@@ -14,26 +14,26 @@ import lombok.Data;
 public class ParkingRequestDTO {
 
     @Schema(description = "Name of the parking lot", example = "Parking Palermo", required = true)
-    @NotBlank(message = "El nombre del parking es obligatorio")
+    @NotBlank(message = "Parking name is required")
     private String parkingName;
 
     @Schema(description = "Address of the parking lot", example = "Av. Libertador 1234", required = true)
-    @NotBlank(message = "La dirección del parking es obligatoria")
+    @NotBlank(message = "Parking address is required")
     private String parkingAddress;
 
     @Schema(description = "Contact phone number of the parking lot", example = "1134567890", required = true)
-    @NotBlank(message = "El teléfono del parking es obligatorio")
+    @NotBlank(message = "Parking phone number is required")
     private String parkingPhone;
 
     @Schema(description = "URL of a representative image", example = "https://example.com/image.jpg")
     private String imageUrl;
 
     @Schema(description = "Total number of spots in the parking lot", example = "20", required = true)
-    @NotNull(message = "El número total de espacios es obligatorio")
+    @NotNull(message = "Total number of spots is required")
     private Integer totalSpots;
 
     @Schema(description = "Number of currently available spots", example = "15", required = true)
-    @NotNull(message = "El número de espacios disponibles es obligatorio")
+    @NotNull(message = "Number of available spots is required")
     private Integer availableSpots;
 
     @Schema(description = "List of additional features", example = "[\"covered\", \"24h surveillance\"]")
@@ -48,13 +48,13 @@ public class ParkingRequestDTO {
     @Schema(description = "Latitude of the location", example = "-34.6037", required = true)
     @DecimalMin(value = "-90.0", message = "Latitude must be greater than or equal to -90")
     @DecimalMax(value = "90.0", message = "Latitude must be less than or equal to 90")
-    @NotNull(message = "La latitud es obligatoria")
+    @NotNull(message = "Latitude is required")
     private Double lat;
 
     @Schema(description = "Longitude of the location", example = "-58.3816", required = true)
     @DecimalMin(value = "-180.0", message = "Longitude must be greater than or equal to -180")
     @DecimalMax(value = "180.0", message = "Longitude must be less than or equal to 180")
-    @NotNull(message = "La longitud es obligatoria")
+    @NotNull(message = "Longitude is required")
     private Double lng;
 
     @Schema(

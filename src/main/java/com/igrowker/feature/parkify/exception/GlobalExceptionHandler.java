@@ -18,12 +18,12 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.igrowker.feature.parkify.features.parkingV2.entities.AccessType;
-
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
@@ -248,7 +248,7 @@ public class GlobalExceptionHandler {
             this(timestamp, status, error, message, path, null);
         }
     }
-        //excepcion para enums
+       // excepcion para enums
         @ExceptionHandler(MethodArgumentTypeMismatchException.class)
         public ResponseEntity<GlobalExceptionHandler.ErrorResponse> handleEnumTypeMismatch(
                 MethodArgumentTypeMismatchException ex, HttpServletRequest request
@@ -256,7 +256,7 @@ public class GlobalExceptionHandler {
         if (ex.getRequiredType() != null && ex.getRequiredType().isEnum()) {
                 String enumName = ex.getRequiredType().getSimpleName();
                 String validValues = Arrays.toString(ex.getRequiredType().getEnumConstants());
-                String message = String.format("Valor inválido para el enum '%s'. Valores válidos: %s", enumName, validValues);
+                String message = String.format("Invalid value for enum '%s'. Valid values: %s", enumName, validValues);
 
                 log.warn("Enum conversion failed for request [{}]: {}", request.getRequestURI(), message);
 
@@ -275,7 +275,7 @@ public class GlobalExceptionHandler {
                         Instant.now(),
                         HttpStatus.BAD_REQUEST.value(),
                         HttpStatus.BAD_REQUEST.getReasonPhrase(),
-                        "Error en tipo de argumento.",
+                        "Invalid argument type.",
                         request.getRequestURI()
                 );
                 return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
@@ -284,29 +284,58 @@ public class GlobalExceptionHandler {
         public ResponseEntity<ErrorResponse> handleEnumDeserializationError(
                 HttpMessageNotReadableException ex, HttpServletRequest request) {
 
-                Throwable cause = ex.getMostSpecificCause();
-                String message = "El formato del cuerpo de la solicitud es inválido.";
+        Throwable cause = ex.getMostSpecificCause();
+        String message = "Invalid request body format.";
 
-                if (cause instanceof IllegalArgumentException && ex.getMessage() != null && ex.getMessage().contains("AccessType")) {
-                        String validValues = Arrays.stream(AccessType.values())
-                                .map(Enum::name)
-                                .collect(Collectors.joining(", "));
-                        message = "Valor inválido para el campo 'accessType'. Valores válidos: " + validValues + ".";
+        if (cause instanceof IllegalArgumentException && ex.getMessage() != null) {
+                
+                String enumName = extractEnumName(ex.getMessage());
+                String validValues = getEnumValues(enumName);
+                if (validValues != null) {
+                message = String.format("Invalid value for '%s'. Valid values: %s", enumName, validValues);
+                } else {
+                message = cause.getMessage(); 
                 }
-
-                ErrorResponse errorResponse = new ErrorResponse(
-                        Instant.now(),
-                        HttpStatus.BAD_REQUEST.value(),
-                        HttpStatus.BAD_REQUEST.getReasonPhrase(),
-                        message,
-                        request.getRequestURI()
-                );
-                return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                Instant.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                message,
+                request.getRequestURI()
+        );
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        }
+        
+        
         @ExceptionHandler(ResponseStatusException.class)
         public ResponseEntity<Object> handleResponseStatusException(ResponseStatusException ex) {
         return ResponseEntity
                 .status(ex.getStatusCode())
                 .body(Map.of("error", ex.getReason()));
+        }
+
+        //auxiliar method
+        private String extractEnumName(String fullMessage) {
+        Pattern pattern = Pattern.compile("([a-zA-Z0-9_]+)\\.class|([a-zA-Z0-9_]+)(?=\\.fromString)");
+        Matcher matcher = pattern.matcher(fullMessage);
+        if (matcher.find()) {
+                return matcher.group(1) != null ? matcher.group(1) : matcher.group(2);
+        }
+        return "enum";
+        }
+
+        private String getEnumValues(String enumSimpleName) {
+        try {
+                String basePackage = "com.igrowker.feature.parkify.features.parkingV2.entities.";
+                Class<?> clazz = Class.forName(basePackage + enumSimpleName);
+                if (clazz.isEnum()) {
+                Object[] values = clazz.getEnumConstants();
+                return Arrays.stream(values).map(Object::toString).collect(Collectors.joining(", "));
+                }
+        } catch (ClassNotFoundException ignored) {}
+        return null;
         }
 }

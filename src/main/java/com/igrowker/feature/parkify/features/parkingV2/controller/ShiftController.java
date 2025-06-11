@@ -2,6 +2,7 @@ package com.igrowker.feature.parkify.features.parkingV2.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -20,6 +21,7 @@ import com.igrowker.feature.parkify.features.parkingV2.service.ShiftService;
 import java.util.List;
 import java.util.UUID;
 @RestController
+@Slf4j
 @RequestMapping("/api/v2/parkings/{parkingId}/shifts")
 @Tag(name = "Shifts", description = "Shift management by parking")
 @SecurityRequirement(name = "bearerAuth")
@@ -45,6 +47,7 @@ public class ShiftController {
         @Parameter(description = "New shift data", required = true)
         @Valid @RequestBody ShiftRequestDTO dto
     ) {
+        log.info("Creating shift: {}", dto);
         ShiftResponseDTO response = shiftService.create(parkingId, dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }

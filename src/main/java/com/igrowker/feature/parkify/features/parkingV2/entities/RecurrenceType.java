@@ -16,7 +16,7 @@ public enum RecurrenceType {
             }
         }
         throw new IllegalArgumentException(
-            "Invalid value for AccessType: '" + value +
+            "Invalid value for RecurrenceType: '" + value +
             "'. Valid values are: " + Arrays.toString(values()));
     }
 }

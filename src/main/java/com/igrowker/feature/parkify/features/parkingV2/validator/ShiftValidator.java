@@ -9,7 +9,11 @@ import com.igrowker.feature.parkify.features.parkingV2.entities.Shift;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -41,22 +45,33 @@ public class ShiftValidator {
         return errors;
     }
 
-    public List<String> validateNoOverlap(ShiftRequestDTO dto, List<Shift> existingShifts) {
+   public List<String> validateNoOverlap(ShiftRequestDTO dto, List<Shift> existingShifts) {
         List<String> errors = new ArrayList<>();
-
         List<Interval> newIntervals = splitIntoIntervals(dto.getStartTime(), dto.getEndTime());
+        Set<Integer> newDays = new HashSet<>(resolveDays(dto.getRecurrenceType(), dto.getSpecificDays()));
 
         for (Shift existing : existingShifts) {
-            List<Interval> currentIntervals = splitIntoIntervals(
-                existing.getStartTime(), existing.getEndTime());
+            Set<Integer> existingDays = new HashSet<>(resolveDays(existing.getRecurrenceType(), existing.getSpecificDays()));
 
-            for (Interval newInterval : newIntervals) {
-                for (Interval actual : currentIntervals) {
-                    if (newInterval.overlapsWith(actual)) {
-                        errors.add("The shift overlaps with an existing one: " +
-                            (existing.getName() != null ? existing.getName() : "unnamed") +
-                            " (" + existing.getStartTime() + " - " + existing.getEndTime() + ")");
-                        return errors;
+            Set<Integer> overlappingDays = new HashSet<>(newDays);
+            overlappingDays.retainAll(existingDays);
+
+            if (!overlappingDays.isEmpty()) {
+                List<Interval> existingIntervals = splitIntoIntervals(existing.getStartTime(), existing.getEndTime());
+
+                for (Interval newInterval : newIntervals) {
+                    for (Interval existingInterval : existingIntervals) {
+                        if (newInterval.overlapsWith(existingInterval)) {
+                            String daysStr = overlappingDays.stream()
+                                    .map(this::dayNameFromIndex)
+                                    .collect(Collectors.joining(", "));
+
+                            errors.add("The shift overlaps with an existing one: " +
+                                    (existing.getName() != null ? existing.getName() : "unnamed") +
+                                    " (" + existing.getStartTime() + " - " + existing.getEndTime() + ") " +
+                                    "on the following day(s): " + daysStr);
+                            return errors;
+                        }
                     }
                 }
             }
@@ -65,6 +80,20 @@ public class ShiftValidator {
         return errors;
     }
 
+    
+    
+    private String dayNameFromIndex(int dayIndex) {
+        return switch (dayIndex) {
+            case 0 -> "Sunday";
+            case 1 -> "Monday";
+            case 2 -> "Tuesday";
+            case 3 -> "Wednesday";
+            case 4 -> "Thursday";
+            case 5 -> "Friday";
+            case 6 -> "Saturday";
+            default -> "Unknown";
+        };
+    }
     private List<Interval> splitIntoIntervals(LocalTime inicio, LocalTime fin) {
         int fromMinute = inicio.toSecondOfDay() / 60;
         int toMinute = fin.toSecondOfDay() / 60;
@@ -79,7 +108,13 @@ public class ShiftValidator {
             return List.of(new Interval(fromMinute, toMinute));
         }
     }
-
+    private List<Integer> resolveDays(RecurrenceType recurrenceType, List<Integer> specificDays) {
+    return switch (recurrenceType) {
+        case EVERY_DAY -> List.of(0, 1, 2, 3, 4, 5, 6);
+        case MONDAY_TO_FRIDAY -> List.of(1, 2, 3, 4, 5);
+        case SPECIFIC_DAYS -> specificDays != null ? specificDays : Collections.emptyList();
+    };
+}
     // Utility record
     private record Interval(int desdeMin, int hastaMin) {
         boolean overlapsWith(Interval otro) {
