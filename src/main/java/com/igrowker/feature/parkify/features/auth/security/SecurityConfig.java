@@ -69,18 +69,30 @@ public class SecurityConfig {
                                 antMatcher(HttpMethod.GET, OPERATIONS_PATH + "/{operationId}/status")
                         ).authenticated()
                         .requestMatchers(
+                                // === Autenticación ===
                                 antMatcher(HttpMethod.POST, AUTH_PATH + "/register"),
                                 antMatcher(HttpMethod.POST, AUTH_PATH + "/login"),
+                                
+                                // === Contenido Estático ===
                                 antMatcher(HttpMethod.GET, CONTENT_PATH + "/home"),
                                 antMatcher(HttpMethod.GET, CONTENT_PATH + "/footer"),
+                                antMatcher(HttpMethod.GET, CONFIG_PATH + "/initial"),
+                                
+                                // === Parkings (Consultas Públicas) ===
                                 antMatcher(HttpMethod.GET, PARKINGS_PATH),
-                                antMatcher(HttpMethod.GET, PARKINGS_PATH + "/nearby"), // 🔥 PÚBLICO: Búsqueda de parkings cercanos
+                                antMatcher(HttpMethod.GET, PARKINGS_PATH + "/nearby"),
                                 antMatcher(HttpMethod.GET, PARKINGS_PATH + "/{parkingId}"),
                                 antMatcher(HttpMethod.GET, PARKINGS_PATH + "/{parkingId}/availability"),
                                 antMatcher(HttpMethod.GET, PARKINGS_PATH + "/availability"),
-                                antMatcher(HttpMethod.GET, CONFIG_PATH + "/initial"),
+                                
+                                // === Features (Catálogo) ===
                                 antMatcher(HttpMethod.GET, "/api/v1/features"),
                                 antMatcher(HttpMethod.GET, "/api/v1/features/**"),
+                                
+                                // === WebSocket (Tiempo Real) ===
+                                antMatcher("/ws/**"),
+                                
+                                // === Documentación API ===
                                 antMatcher("/v3/api-docs/**"),
                                 antMatcher("/swagger-ui/**"),
                                 antMatcher("/swagger-ui.html")
