@@ -1,7 +1,26 @@
 services:
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    environment:
+      POSTGRES_DB: db_parkify
+      POSTGRES_USER: parkify
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U parkify"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   app:
     build: .
-    container_name: spring_boot_app
+    container_name: parkify_app
     ports:
       - "8080:8080"
     environment:
@@ -12,6 +31,9 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
     networks:
       - app-network
+    depends_on:
+      db:
+        condition: service_healthy
 
 networks:
   app-network:
