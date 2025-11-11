@@ -13,6 +13,7 @@ Servicio backend para la aplicación Parkify, que proporciona una API para gesti
     *   [Detención](#-detención-y-Gestión-de-Contenedores)
     *   [Visualización de Logs](#-visualización-de-logs)
     *   [Acceso a la Base de Datos](#-acceso-a-la-base-de-datos)
+*   [🚀 Despliegue en Render](#-despliegue-en-render)
 *   [Documentación de la API (Swagger)](#-documentación-de-la-api-swagger)
 *   [Ejecución de Pruebas (Tests)](#-ejecución-de-pruebas-tests)
 *   [Variables de Entorno (`.env`)](#-variables-de-entorno-env)
@@ -150,6 +151,25 @@ Puedes conectarte a la base de datos PostgreSQL que se ejecuta en Docker utiliza
 *   **Usuario:** `parkify`
 *   **Contraseña:** `1234`
 
+## 🚀 Despliegue en Render
+
+Para desplegar esta aplicación en producción usando Render.com, sigue la **[Guía de Despliegue en Render](./RENDER_SETUP.md)**.
+
+Esta guía completa te mostrará:
+- ✅ Cómo crear y configurar la base de datos PostgreSQL
+- ✅ Cómo crear el Web Service con Docker
+- ✅ Todas las variables de entorno necesarias
+- ✅ Solución de problemas comunes
+- ✅ Verificación del despliegue exitoso
+
+**Resumen rápido:**
+1. Crea una base de datos PostgreSQL en Render
+2. Crea un Web Service con runtime Docker
+3. Configura las variables de entorno (especialmente `SPRING_PROFILES_ACTIVE=prod` y `DATABASE_URL`)
+4. ¡Despliega!
+
+Ver guía completa: **[RENDER_SETUP.md](./RENDER_SETUP.md)**
+
 ## 📖 Documentación de la API (Swagger)
 
 Una vez que la aplicación esté iniciada correctamente, la documentación interactiva de la API (Swagger UI) estará disponible en:
@@ -198,6 +218,7 @@ El archivo `.env` se utiliza para configurar el entorno local de Docker Compose.
 *   Spring Boot 3.x
 *   Spring Security (Autenticación JWT)
 *   Spring Data JPA (Hibernate)
+*   **Spring WebSocket (STOMP + SockJS)** - Para actualizaciones en tiempo real
 *   PostgreSQL 15
 *   Maven
 *   Docker / Docker Compose
