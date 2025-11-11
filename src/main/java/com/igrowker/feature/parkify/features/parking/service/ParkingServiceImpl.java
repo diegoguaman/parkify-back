@@ -42,6 +42,7 @@ public class ParkingServiceImpl implements ParkingService {
             = "Authenticated owner not found with email: ";
     private final ParkingRepository parkingRepository;
     private final AuthUserRepository authUserRepository;
+    private final ParkingWebSocketService webSocketService;
 
     @Override
     public ParkingResponse createParking(ParkingRequest request) {
@@ -129,6 +130,10 @@ public class ParkingServiceImpl implements ParkingService {
                 .parkingImageUrl(request.getParkingImageUrl())
                 .build();
         final Parking savedParking = parkingRepository.save(parking);
+
+        // 🔥 Enviar evento WebSocket: Nuevo parking creado
+        webSocketService.broadcastParkingCreated(savedParking.getId());
+        log.info("✅ Parking created and broadcasted: {} (ID: {})", savedParking.getName(), savedParking.getId());
 
         return mapToFlatParkingResponse(savedParking, owner);
     }
@@ -253,8 +258,19 @@ public class ParkingServiceImpl implements ParkingService {
             throw new InvalidAvailabilityException("Available spots cannot be negative.");
         }
         parking.setAvailableSpots(availableSpots);
-        parkingRepository.save(parking);
-        return new ParkingAvailabilityResponse(parking.getId(), parking.getAvailableSpots());
+        final Parking updatedParking = parkingRepository.save(parking);
+
+        // 🔥 Enviar evento WebSocket: Disponibilidad actualizada
+        webSocketService.broadcastAvailabilityUpdate(
+                updatedParking.getId(),
+                updatedParking.getAvailableSpots(),
+                updatedParking.getCapacity(),
+                updatedParking.getName()
+        );
+        log.info("✅ Availability updated and broadcasted for parking '{}': {} spots available",
+                updatedParking.getName(), updatedParking.getAvailableSpots());
+
+        return new ParkingAvailabilityResponse(updatedParking.getId(), updatedParking.getAvailableSpots());
     }
 
     @Override
@@ -271,7 +287,14 @@ public class ParkingServiceImpl implements ParkingService {
                         "Parking not found for owner with email: " + ownerEmail + " to delete."
                 ));
 
-        parkingRepository.deleteById(parking.getId());
+        final Long parkingId = parking.getId();
+        final String parkingName = parking.getName();
+        
+        parkingRepository.deleteById(parkingId);
+
+        // 🔥 Enviar evento WebSocket: Parking eliminado
+        webSocketService.broadcastParkingDeleted(parkingId);
+        log.info("✅ Parking deleted and broadcasted: '{}' (ID: {})", parkingName, parkingId);
     }
 
     @Override
@@ -457,10 +480,19 @@ public class ParkingServiceImpl implements ParkingService {
         log.info("Updating parking {} availability from {} to {}",
                 parkingId, parking.getAvailableSpots(), availableSpots);
         parking.setAvailableSpots(availableSpots);
-        parkingRepository.save(parking);
+        final Parking updatedParking = parkingRepository.save(parking);
 
-        log.info("Successfully updated availability for parking {}", parkingId);
-        return new ParkingAvailabilityResponse(parking.getId(), parking.getAvailableSpots());
+        // 🔥 Enviar evento WebSocket: Disponibilidad actualizada
+        webSocketService.broadcastAvailabilityUpdate(
+                updatedParking.getId(),
+                updatedParking.getAvailableSpots(),
+                updatedParking.getCapacity(),
+                updatedParking.getName()
+        );
+
+        log.info("✅ Successfully updated and broadcasted availability for parking '{}': {} spots",
+                updatedParking.getName(), updatedParking.getAvailableSpots());
+        return new ParkingAvailabilityResponse(updatedParking.getId(), updatedParking.getAvailableSpots());
     }
 
     @Override

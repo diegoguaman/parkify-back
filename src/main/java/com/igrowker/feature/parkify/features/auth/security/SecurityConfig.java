@@ -46,15 +46,14 @@ public class SecurityConfig {
                         .requestMatchers(
                                 antMatcher(HttpMethod.POST, PARKINGS_PATH + "/my"),
                                 antMatcher(HttpMethod.GET, PARKINGS_PATH + "/my"),
-                                antMatcher(HttpMethod.GET, PARKINGS_PATH + "/my"),
-                                antMatcher(HttpMethod.PUT, PARKINGS_PATH + "/{parkingId}"),
                                 antMatcher(HttpMethod.GET, PARKINGS_PATH + "/my-list"),
+                                antMatcher(HttpMethod.PUT, PARKINGS_PATH + "/{parkingId}"),
                                 antMatcher(HttpMethod.DELETE, PARKINGS_PATH + "/my"),
                                 antMatcher(HttpMethod.PATCH, PARKINGS_PATH + "/my/availability"),
+                                antMatcher(HttpMethod.PATCH, PARKINGS_PATH + "/{parkingId}/availability"), // 🔥 NUEVO: Permite actualizar disponibilidad por ID
                                 antMatcher(HttpMethod.PUT, PARKINGS_PATH + "/{parkingId}/features/{featureSlug}"),
                                 antMatcher(HttpMethod.DELETE, PARKINGS_PATH + "/{parkingId}/features/{featureSlug}"),
-                                antMatcher(HttpMethod.GET, PARKINGS_PATH + "/owner/parking"),
-                                antMatcher(HttpMethod.PATCH, "/api/v1/parkings/my/availability")
+                                antMatcher(HttpMethod.GET, PARKINGS_PATH + "/owner/parking")
                         ).hasRole(OWNER_ROLE)
                         .requestMatchers(
                                 antMatcher(HttpMethod.POST, BOOKINGS_PATH)
