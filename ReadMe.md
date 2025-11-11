@@ -151,24 +151,30 @@ Puedes conectarte a la base de datos PostgreSQL que se ejecuta en Docker utiliza
 *   **Usuario:** `parkify`
 *   **Contraseña:** `1234`
 
-## 🚀 Despliegue en Render
+## 🚀 Despliegue en Producción (GRATIS)
 
-Para desplegar esta aplicación en producción usando Render.com, sigue la **[Guía de Despliegue en Render](./RENDER_SETUP.md)**.
+### Opción 1: Render + Supabase (⭐ Recomendado - 100% Gratis)
 
-Esta guía completa te mostrará:
-- ✅ Cómo crear y configurar la base de datos PostgreSQL
-- ✅ Cómo crear el Web Service con Docker
-- ✅ Todas las variables de entorno necesarias
-- ✅ Solución de problemas comunes
-- ✅ Verificación del despliegue exitoso
+**Backend**: Render (gratis)  
+**Base de datos**: Supabase (PostgreSQL gratis para siempre)  
+**Frontend**: Vercel (gratis)
 
-**Resumen rápido:**
-1. Crea una base de datos PostgreSQL en Render
-2. Crea un Web Service con runtime Docker
-3. Configura las variables de entorno (especialmente `SPRING_PROFILES_ACTIVE=prod` y `DATABASE_URL`)
-4. ¡Despliega!
+Sigue la **[Guía de Supabase](./SUPABASE_SETUP.md)** para configurar:
+- ✅ PostgreSQL gratuito (500MB) sin tarjeta de crédito
+- ✅ Backend en Render conectado a Supabase
+- ✅ Todo gratis para siempre
 
-Ver guía completa: **[RENDER_SETUP.md](./RENDER_SETUP.md)**
+**[👉 Ver Guía Completa: SUPABASE_SETUP.md](./SUPABASE_SETUP.md)**
+
+---
+
+### Opción 2: Render con PostgreSQL incluido
+
+Si tienes disponible el tier gratuito de PostgreSQL en Render:
+
+**[👉 Ver Guía: RENDER_SETUP.md](./RENDER_SETUP.md)**
+
+**Nota**: Render solo permite una base de datos PostgreSQL gratuita por cuenta. Si ya usas una para otro proyecto, usa la **Opción 1** con Supabase.
 
 ## 📖 Documentación de la API (Swagger)
 

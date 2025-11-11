@@ -1,0 +1,44 @@
+name: Keep Alive - Parkify Backend
+
+on:
+  schedule:
+    # Se ejecuta 2 veces por semana (Lunes y Jueves a las 8 AM UTC)
+    # Esto previene que Supabase pause el proyecto (pausa después de 7 días sin actividad)
+    - cron: '0 8 * * 1,4'
+  
+  # Permite ejecutarlo manualmente desde GitHub Actions
+  workflow_dispatch:
+
+jobs:
+  ping-backend:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Ping Parkify Backend
+        run: |
+          echo "🚀 Haciendo ping al backend de Parkify..."
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://parkify-backend.onrender.com/api/v1/auth/health)
+          
+          if [ $response -eq 200 ]; then
+            echo "✅ Backend activo - Status: $response"
+          else
+            echo "⚠️ Backend respondió con status: $response"
+          fi
+      
+      - name: Ping Supabase Database
+        run: |
+          echo "🗄️ Verificando conexión con Supabase..."
+          # Este ping también mantiene activa la conexión a la base de datos
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://parkify-backend.onrender.com/api/v1/parkings)
+          
+          if [ $response -eq 200 ] || [ $response -eq 401 ]; then
+            echo "✅ Base de datos activa - Status: $response"
+          else
+            echo "⚠️ Base de datos respondió con status: $response"
+          fi
+      
+      - name: Log resultado
+        run: |
+          echo "📅 Última ejecución: $(date)"
+          echo "🎯 Próxima ejecución programada en ~3-4 días"
+
