@@ -74,6 +74,7 @@ public class SecurityConfig {
                                 antMatcher(HttpMethod.GET, CONTENT_PATH + "/home"),
                                 antMatcher(HttpMethod.GET, CONTENT_PATH + "/footer"),
                                 antMatcher(HttpMethod.GET, PARKINGS_PATH),
+                                antMatcher(HttpMethod.GET, PARKINGS_PATH + "/nearby"), // 🔥 PÚBLICO: Búsqueda de parkings cercanos
                                 antMatcher(HttpMethod.GET, PARKINGS_PATH + "/{parkingId}"),
                                 antMatcher(HttpMethod.GET, PARKINGS_PATH + "/{parkingId}/availability"),
                                 antMatcher(HttpMethod.GET, PARKINGS_PATH + "/availability"),

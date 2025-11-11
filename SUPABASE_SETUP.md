@@ -65,13 +65,34 @@ postgresql://postgres:MiPassword123Super@db.abcdefghijklmn.supabase.co:5432/post
 3. Ve a la pestaña **Environment**
 4. **Agrega o actualiza** las siguientes variables de entorno:
 
-| Variable | Valor | Descripción |
-|----------|-------|-------------|
-| `SPRING_PROFILES_ACTIVE` | `prod` | Activa el perfil de producción |
-| `DATABASE_URL` | `postgresql://postgres:...` | **Pega aquí la URL completa de Supabase** |
-| `JWT_SECRET` | `[Tu clave segura]` | Clave para firmar tokens JWT |
-| `JWT_EXPIRATION` | `PT10H` | Tiempo de expiración del token |
-| `FRONTEND_URL` | `https://parkify-front.vercel.app` | URL de tu frontend |
+### ⚠️ **IMPORTANTE: Formato correcto de DATABASE_URL**
+
+La URL de Supabase debe modificarse para Spring Boot:
+
+**❌ MAL (formato de Supabase):**
+```
+postgresql://postgres:MiPass!@db.xxx.supabase.co:5432/postgres
+```
+
+**✅ BIEN (formato para Spring Boot):**
+```
+jdbc:postgresql://db.xxx.supabase.co:5432/postgres?user=postgres&password=MiPass!&sslmode=require
+```
+
+**Cambios necesarios:**
+1. Agregar `jdbc:` al inicio
+2. Mover credenciales a parámetros `user` y `password`
+3. Agregar `sslmode=require` al final
+
+### 📋 **Variables de entorno:**
+
+| Variable | Valor | Ejemplo |
+|----------|-------|---------|
+| `SPRING_PROFILES_ACTIVE` | `prod` | `prod` |
+| `DATABASE_URL` | Ver formato arriba ⬆️ | `jdbc:postgresql://db.xxx.supabase.co:5432/postgres?user=postgres&password=TU_PASSWORD&sslmode=require` |
+| `JWT_SECRET` | Base64 sin espacios | `TXlTdXBlclNlY3VyZUtleUZvclBhcmtpZnk=` |
+| `JWT_EXPIRATION` | Tiempo token | `PT10H` |
+| `FRONTEND_URL` | URL de tu frontend | `https://parkify-front.vercel.app` |
 
 5. Haz clic en **"Save Changes"**
 6. Render redesplegará automáticamente tu aplicación
