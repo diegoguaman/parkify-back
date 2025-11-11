@@ -42,19 +42,49 @@ Esta guía te ayudará a configurar una base de datos PostgreSQL gratuita en Sup
 
 1. Una vez creado el proyecto, ve a **Settings** (⚙️) en el menú lateral
 2. Haz clic en **Database**
-3. En la sección **"Connection string"**, selecciona el modo **URI**
-4. Copia la cadena de conexión que se muestra:
+3. En la sección **"Connection string"**, verás **dos opciones**:
 
+### 🔷 **Opción A: Session Pooler (Puerto 6543) - RECOMENDADO para Render Free**
+
+Esta opción es **más compatible con Render** porque usa IPv4.
+
+**En Supabase Dashboard:**
+1. Selecciona **"Session pooler"** en el dropdown
+2. Copia la URL que se muestra:
+```
+postgresql://postgres.xxx:[YOUR-PASSWORD]@aws-0-us-east-1.pooler.supabase.com:6543/postgres
+```
+
+3. **IMPORTANTE**: Reemplaza `[YOUR-PASSWORD]` con tu contraseña
+
+**Ejemplo de URL completa:**
+```
+postgresql://postgres.abcdef:MiPassword123@aws-0-us-east-1.pooler.supabase.com:6543/postgres
+```
+
+### 🔷 **Opción B: Direct Connection (Puerto 5432) - Alternativa**
+
+**En Supabase Dashboard:**
+1. Selecciona **"Direct connection"** en el dropdown (modo URI)
+2. Copia la cadena de conexión:
 ```
 postgresql://postgres:[YOUR-PASSWORD]@db.abcdefghijklmn.supabase.co:5432/postgres
 ```
 
-5. **IMPORTANTE**: Reemplaza `[YOUR-PASSWORD]` con la contraseña que copiaste en el Paso 2
+**⚠️ Limitación:** Puede tener problemas de conectividad IPv6 desde Render Free Tier.
 
-Ejemplo de URL completa:
-```
-postgresql://postgres:MiPassword123Super@db.abcdefghijklmn.supabase.co:5432/postgres
-```
+---
+
+### 📊 **Comparación de opciones:**
+
+| Característica | Session Pooler (6543) | Direct Connection (5432) |
+|----------------|----------------------|--------------------------|
+| **Compatibilidad IPv4** | ✅ Sí | ❌ No (solo IPv6) |
+| **Velocidad** | 🟡 Media | ✅ Rápida |
+| **Max Conexiones** | ⚠️ Limitado (3-5) | ✅ Sin límite |
+| **Render Free Tier** | ✅ Funciona bien | ❌ Puede fallar |
+
+**💡 Recomendación:** Usa **Session Pooler** para evitar problemas de red con Render Free Tier.
 
 ---
 
@@ -67,7 +97,25 @@ postgresql://postgres:MiPassword123Super@db.abcdefghijklmn.supabase.co:5432/post
 
 ### ⚠️ **IMPORTANTE: Formato correcto de DATABASE_URL**
 
-La URL de Supabase debe modificarse para Spring Boot:
+La URL de Supabase debe modificarse para Spring Boot. Elige el formato según la opción que elegiste en el Paso 3:
+
+#### 🔷 **Si usas Session Pooler (Puerto 6543) - RECOMENDADO:**
+
+**❌ MAL (formato de Supabase):**
+```
+postgresql://postgres.xxx:MiPass!@aws-0-us-east-1.pooler.supabase.com:6543/postgres
+```
+
+**✅ BIEN (formato para Spring Boot):**
+```
+jdbc:postgresql://aws-0-us-east-1.pooler.supabase.com:6543/postgres?user=postgres.xxx&password=MiPass!&sslmode=require
+```
+
+**⚠️ IMPORTANTE:** 
+- El usuario incluye el prefijo `postgres.xxx` (no solo `postgres`)
+- El pool size de HikariCP está configurado a **3 conexiones máximo** para cumplir con el límite de Supabase Free Tier
+
+#### 🔷 **Si usas Direct Connection (Puerto 5432) - Alternativa:**
 
 **❌ MAL (formato de Supabase):**
 ```
@@ -79,17 +127,14 @@ postgresql://postgres:MiPass!@db.xxx.supabase.co:5432/postgres
 jdbc:postgresql://db.xxx.supabase.co:5432/postgres?user=postgres&password=MiPass!&sslmode=require
 ```
 
-**Cambios necesarios:**
-1. Agregar `jdbc:` al inicio
-2. Mover credenciales a parámetros `user` y `password`
-3. Agregar `sslmode=require` al final
+---
 
 ### 📋 **Variables de entorno:**
 
 | Variable | Valor | Ejemplo |
 |----------|-------|---------|
 | `SPRING_PROFILES_ACTIVE` | `prod` | `prod` |
-| `DATABASE_URL` | Ver formato arriba ⬆️ | `jdbc:postgresql://db.xxx.supabase.co:5432/postgres?user=postgres&password=TU_PASSWORD&sslmode=require` |
+| `DATABASE_URL` | Ver formato arriba ⬆️ según tu opción | **Session Pooler:** `jdbc:postgresql://aws-0-us-east-1.pooler.supabase.com:6543/postgres?user=postgres.xxx&password=TU_PASSWORD&sslmode=require`<br>**Direct:** `jdbc:postgresql://db.xxx.supabase.co:5432/postgres?user=postgres&password=TU_PASSWORD&sslmode=require` |
 | `JWT_SECRET` | Base64 sin espacios | `TXlTdXBlclNlY3VyZUtleUZvclBhcmtpZnk=` |
 | `JWT_EXPIRATION` | Tiempo token | `PT10H` |
 | `FRONTEND_URL` | URL de tu frontend | `https://parkify-front.vercel.app` |
@@ -210,6 +255,27 @@ En Supabase, ve a **Settings** → **Usage** para ver:
 2. Haz clic en **"Reset database password"**
 3. Genera una nueva contraseña
 4. Actualiza `DATABASE_URL` en Render con la nueva contraseña
+
+### ❌ Error: "FATAL: MaxClientsInSessionMode: max clients reached"
+
+**Causa**: El pool de conexiones de HikariCP (10 conexiones) excede el límite del Session Pooler de Supabase (3-5 conexiones en Free Tier).
+
+**Síntoma completo:**
+```
+FATAL: MaxClientsInSessionMode: max clients reached - in Session mode max clients are limited to pool_size
+```
+
+**Solución:**
+1. **Ya está corregido** en `application-prod.properties` (pool size = 3)
+2. Si aún ves el error:
+   - Ve a Render → Environment
+   - Verifica que no tengas variables duplicadas: `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`
+   - **Elimina** todas esas variables duplicadas (solo debe existir `DATABASE_URL`)
+   - Haz clic en **"Save Changes"** para redesplegar
+
+**Alternativa** (si el problema persiste):
+- Cambia a **Direct Connection** (puerto 5432) en lugar de Session Pooler (6543)
+- Actualiza `DATABASE_URL` con el formato de Direct Connection del Paso 3
 
 ### ❌ Error: "Connection timeout"
 
