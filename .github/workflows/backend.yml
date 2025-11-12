@@ -1,51 +1,23 @@
-name: Build and Deploy Backend
+# ================================================
+# ⚠️ WORKFLOW DESHABILITADO - Ahora usamos Render
+# ================================================
+# Este workflow estaba configurado para GCP con self-hosted runner.
+# Render hace el deploy automáticamente sin GitHub Actions.
+# ================================================
+
+name: Disabled GCP Workflow
 
 on:
-  push:
-    branches:
-      - develop
-  workflow_dispatch:
+  workflow_dispatch:  # Solo ejecución manual
 
 jobs:
-  build-and-deploy:
-    runs-on: self-hosted
-
+  disabled:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Autenticarse en GCP con Service Account
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
-
-      - name: Configurar Docker con Artifact Registry
+      - name: Workflow Disabled
         run: |
-          gcloud auth configure-docker southamerica-east1-docker.pkg.dev
-
-      - name: Construir imagen Docker
-        run: |
-          docker build -t southamerica-east1-docker.pkg.dev/training-batch-05/parkify-backend/spring-boot:latest .
-
-      - name: Subir imagen a Artifact Registry
-        run: |
-          docker push southamerica-east1-docker.pkg.dev/training-batch-05/parkify-backend/spring-boot:latest
-
-      - name: Detener contenedor anterior si existe
-        run: |
-          docker stop spring-boot || true
-          docker rm spring-boot || true
-
-      - name: Correr contenedor actualizado
-        run: |
-          docker run -d \
-            --name spring-boot \
-            -p 8080:8080 \
-            -e SPRING_PROFILES_ACTIVE=${{ secrets.SPRING_PROFILES_ACTIVE }} \
-            -e SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }} \
-            -e SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }} \
-            -e SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }} \
-            -e FRONTEND_URL=${{ secrets.FRONTEND_URL }} \
-            southamerica-east1-docker.pkg.dev/training-batch-05/parkify-backend/spring-boot:latest
+          echo "⚠️ Este workflow está deshabilitado."
+          echo "El deploy se hace automáticamente en Render.com"
+          echo "Para más información, ver RENDER_SETUP.md"
 
 
